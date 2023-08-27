@@ -1,4 +1,4 @@
-// ADD BINARY
+// ADD BINARY (BIT MANIPULATION)
 class Solution {
 public:
     string addBinary(string a, string b) {
