@@ -1,1 +1,1 @@
-Here I put solns of some important questions of leetcode.
+Here I put solutions of some important questions of leetcode.
