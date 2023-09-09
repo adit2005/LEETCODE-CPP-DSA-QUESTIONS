@@ -1,32 +1,19 @@
-// This one is optimised solution.
 class Solution {
 public:
     int largestRectangleArea(vector<int>& heights) {
-        int ans = INT_MIN;
-        int area_with_top = 0;
-        int top = 0;
-        int i = 0;
-        int n = heights.size();
-        stack<int> s;
+        stack<int> st;
+        int ans = 0;
+        heights.push_back(0);
 
-        while (i < n) {
-            if (s.empty() || heights[s.top()] <= heights[i]) {
-                s.push(i++);
-            } else {
-                top = s.top();
-                s.pop();
-                area_with_top = heights[top] * (s.empty() ? i : i - s.top() - 1);
-                ans = max(ans, area_with_top);
+        for (int i = 0; i < heights.size(); i++) {
+            while (!st.empty() && heights[st.top()] > heights[i]) {
+                int top = heights[st.top()];
+                st.pop();
+                int ran = st.empty() ? -1 : st.top();
+                ans = max(ans, top * (i - ran - 1));
             }
+            st.push(i);
         }
-
-        while (!s.empty()) {
-            top = s.top();
-            s.pop();
-            area_with_top = heights[top] * (s.empty() ? i : i - s.top() - 1);
-            ans = max(ans, area_with_top);
-        }
-
         return ans;
     }
 };
