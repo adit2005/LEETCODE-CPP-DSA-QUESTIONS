@@ -1,28 +1,21 @@
 class Solution {
 public:
-   vector<int> dp;
-    int sub(vector<int> &day, vector<int> &cost, int si)    // subproblem
-    {
-        int n = day.size();
-        if(si>=n)   return 0;
+   int mincostTickets(vector<int>& DAYS, vector<int>& cost) {
         
-        if(dp[si])  return dp[si];      // ie we aready knows the answer so no need to re calculate , return answer.
+        unordered_set<int> days(DAYS.begin(),DAYS.end());
+        vector<int> dp(367);
         
-        int cost_day = cost[0] + sub(day , cost , si+1);
-        
-        int i;
-        for(i = si ; i<n and day[i]<day[si]+7 ; i++);
-        int cost_week = cost[1] + sub(day, cost, i);
-        
-        for(i = si ; i<n and day[i]<day[si]+30 ; i++);
-        int cost_month = cost[2] + sub(day, cost, i);     
-        
-        dp[si] = min({cost_day, cost_week , cost_month  });   // we store answer for future references 
-        
-        return dp[si];
-    } 
-    int mincostTickets(vector<int>& days, vector<int>& costs) {        
-        dp.resize(366);
-        return sub(days,costs,0);    
+        for(int i=1 ; i<366 ; i++)
+        {
+            dp[i] = dp[i-1];
+            if(days.find(i) != days.end())
+            {
+			// cost of ith day , decision of ith day will be
+                dp[i] = min({ dp[i - 1] + cost[0],   // 1st case
+                             dp[max(0, i - 7)] + cost[1],  // 2nd case
+                             dp[max(0, i - 30)] + cost[2]});  // 3rd case
+            }
+        }
+        return dp[365];
     }
 };
