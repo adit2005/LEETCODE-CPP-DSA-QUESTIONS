@@ -1,41 +1,31 @@
 class Solution {
 public:
-    int vis[17];
-    int n;
-    
-    bool solve(vector<int>& nums, int ind, int cs, int target, int k){
-        if(k==1){
+    bool dfs(vector<int>& nums, vector<bool>& v, int target, int sum,int i, int k)
+    {
+        if(k==1)
             return true;
-        }
-        if(ind==n){
+        if(i==nums.size())
             return false;
-        }
-        if(cs==target)
-            return solve(nums, 0, 0, target, k-1);
-        for(int i=ind;i<n;i++){
-            if (i-1>=0 && nums[i]==nums[i-1] && !vis[i-1]) //handle TLE for consecutive same elements
+        if(sum==target)
+            return dfs(nums, v, target, 0, 0, k-1);
+        for(int j=i;j<nums.size();j++)
+        {
+            if(v[j] || sum+nums[j]>target)
                 continue;
-            if(!vis[i] && cs+nums[i]<=target){
-                vis[i]=1;
-                if(solve(nums,i+1,cs+nums[i],target,k))
-                    return true;
-                vis[i]=0;
-            }
+            v[j]=true;
+            if(dfs(nums, v, target, sum+nums[j], j+1, k))
+                return true;
+            v[j]=false;
         }
         return false;
     }
-    
     bool canPartitionKSubsets(vector<int>& nums, int k) {
-        n=nums.size();
-        memset(vis,0,sizeof(vis));
-        int sum=0;
-        for(auto x: nums)
-            sum+=x;
-        if(k==0 || sum%k!=0)
+        int sum=accumulate(nums.begin(), nums.end(), 0);
+        if(nums.size()<k || sum%k)
             return false;
-        int target=sum/k;
-        int cs=0;
-        int ind=0;
-        return solve(nums, ind, cs, target, k);
+        sort(nums.begin(), nums.end(), greater<int>());
+        vector<bool> v(nums.size(), false);
+        bool ans=dfs(nums, v, sum/k, 0, 0, k);
+        return ans;
     }
 };
