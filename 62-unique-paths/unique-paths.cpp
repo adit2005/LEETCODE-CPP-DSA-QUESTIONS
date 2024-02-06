@@ -1,23 +1,27 @@
 class Solution {
 public:
+    int countWaysUtil(int i , int j , vector<vector<int>>& dp){
+        if(i == 0 && j == 0){
+            return 1;
+        }
+
+        if(i <0 || j < 0){
+            return 0;
+        }
+
+        if(dp[i][j] != -1){
+            return dp[i][j];
+        }
+
+        int up = countWaysUtil(i - 1, j, dp);
+        int left = countWaysUtil(i, j - 1, dp);
+
+        return dp[i][j] = up+left;
+
+    }
+    
     int uniquePaths(int m, int n) {
-        vector<vector<int>> dp(m, vector<int>(n, 0));
-        
-        // Initialize the rightmost column and bottom row to 1 because there is only one way to reach each cell in those rows/columns.
-        for (int i = 0; i < m; i++) {
-            dp[i][n-1] = 1;
-        }
-        for (int j = 0; j < n; j++) {
-            dp[m-1][j] = 1;
-        }
-        
-        // Fill in the dp table bottom-up
-        for (int i = m - 2; i >= 0; i--) {
-            for (int j = n - 2; j >= 0; j--) {
-                dp[i][j] = dp[i+1][j] + dp[i][j+1];
-            }
-        }
-        
-        return dp[0][0];
+        vector<vector<int>> dp(m,vector<int>(n,-1));
+        return countWaysUtil(m-1, n-1,dp);
     }
 };
