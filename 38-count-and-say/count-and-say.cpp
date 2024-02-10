@@ -1,36 +1,34 @@
 class Solution {
 public:
-     string countAndSay(int n) 
+    string solve(string s,int n)
     {
-        if(n == 1)
-          return "1";
-        if(n == 2)
-          return "11";
-          
-        string str = "11";
-        
-        for(int i = 3; i <= n; i++)
-         {
-             str += '$';
-             int len = str.length();
-             
-             int cnt = 1;
-             string tmp = "";
-             
-             for(int j = 1; j < len; j++)
-              {
-                  if(str[j] != str[j - 1])
-                    {
-                        tmp += cnt + '0';
-                        tmp += str[j - 1];
-                        cnt = 1;
-                    }
-                   else
-                     cnt++;
-              }
-            str = tmp;  
-         }
-         
-        return str;
+        if(n==1)
+        {
+            return s;
+        }
+       
+        int freq=1;
+        char ch=s[0];
+        string ans="";
+        s+="#";
+        for(int i=1;i<s.size();i++)
+        {
+            if(s[i]==ch)
+            {
+                
+                freq++;
+            }
+            else
+            {
+               
+                ans+=to_string(freq)+ch;
+                freq=1;
+                ch=s[i];
+            }
+        }
+        return solve(ans,n-1);
+    }
+    string countAndSay(int n) {
+        return solve("1",n);
     }
 };
