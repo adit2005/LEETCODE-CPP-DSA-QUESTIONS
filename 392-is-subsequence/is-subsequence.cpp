@@ -26,7 +26,7 @@ public:
         
         vector<vector<int>> t(m+1,vector<int> (n+1,-1));
     
-        if(isSubs(s1,s2,m,n,t) == m)
+        if(isSubs(s1,s2,m,n,t) >= m)
             return true;
         return false;
     }
