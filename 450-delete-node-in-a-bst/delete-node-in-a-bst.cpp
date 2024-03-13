@@ -1,14 +1,3 @@
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
 #include <stack>
 
 class Solution {
@@ -60,20 +49,20 @@ public:
         } 
         // Case 3: Node to delete has two children
         else {
-            TreeNode* successor = cur->right;
-            TreeNode* successorParent = cur;
-            while (successor->left != NULL) {
-                successorParent = successor;
-                successor = successor->left;
+            TreeNode* largestLeft = cur->left;
+            TreeNode* largestLeftParent = cur;
+            while (largestLeft->right != NULL) {
+                largestLeftParent = largestLeft;
+                largestLeft = largestLeft->right;
             }
-            // Replace value of the node to be deleted with the value of its successor
-            cur->val = successor->val;
-            // Delete the successor node (which has either no children or only a right child)
-            if (successorParent->left == successor)
-                successorParent->left = successor->right;
+            // Replace value of the node to be deleted with the value of its largest left child
+            cur->val = largestLeft->val;
+            // Delete the largest left child node (which has either no children or only a left child)
+            if (largestLeftParent->left == largestLeft)
+                largestLeftParent->left = largestLeft->left;
             else
-                successorParent->right = successor->right;
-            delete successor;
+                largestLeftParent->right = largestLeft->left;
+            delete largestLeft;
         }
         
         return root;
