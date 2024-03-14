@@ -9,26 +9,19 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
- //---Done using morris traversal---//
 class Solution {
+private:
+    TreeNode* prev = nullptr;
+
 public:
     void flatten(TreeNode* root) {
-         if(root==NULL){return ;}
-         TreeNode* curr=root;
-         while(curr!=NULL)
-         {
-             if(curr->left!=NULL)
-             {
-                 TreeNode* next=curr->left;
-                 while(next->right!=NULL)
-                 {
-                     next=next->right;
-                 }
-                 next->right=curr->right;
-                 curr->right=curr->left;
-                 curr->left=NULL;
-             }
-            curr=curr->right; 
-         }
-    }    
+        if (root == nullptr) return;
+
+        flatten(root->right);
+        flatten(root->left);
+
+        root->right = prev;
+        root->left = nullptr;
+        prev = root;
+    }
 };
