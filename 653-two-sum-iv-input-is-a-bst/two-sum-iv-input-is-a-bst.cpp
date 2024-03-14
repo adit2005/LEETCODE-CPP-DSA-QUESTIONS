@@ -9,60 +9,36 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
-class BSTIterator{
-private:    
-    stack<TreeNode*> st;
-    //reverse = true - before(back);
-    //reverse = false - next(front);
-    bool reverse = true;
-    
-    void pushAll(TreeNode* node)
-    {
-        while(node)
-        {
-            st.push(node);
-            if(reverse) node = node->right; //before-back
-            else node = node->left; //next-front
-        }
-    }
-    
-public:
-    BSTIterator(TreeNode* node, bool isReverse)
-    {
-        reverse = isReverse;
-        pushAll(node);
-    }
-    
-    int next()
-    {
-        TreeNode* top = st.top();
-        st.pop();
-        
-        if(reverse) pushAll(top->left);//before-back
-        else pushAll(top->right);//next-front
-        
-        return top->val;       
-    }
-};
 class Solution {
 public:
-    bool findTarget(TreeNode* root, int k) 
+    
+    void inorder(TreeNode* node)
     {
-        BSTIterator l(root, false);
-        BSTIterator r(root, true);
-        
-        int left = l.next(); //for next_front
-        int right = r.next(); //for before_back
-        
-        while(left<right)
-        {
-            if(left+right==k) return true;
-            
-            else if(left+right<k) left = l.next();
-            
-            else right = r.next();
-        }
-        
-        return false;       
+        if(!node)
+            return;
+        inorder(node -> left);
+        vec.push_back(node -> val);
+        inorder(node -> right);
     }
+    
+    bool findTarget(TreeNode* root, int k) {
+        if(!root)
+            return false;
+        inorder(root);
+        int i = 0, j = vec.size()-1;
+        while(i < j)
+        {
+            int sum = vec[i]+vec[j];
+            if(sum == k)
+                return true;
+            else if(sum < k)
+                i++;
+            else
+                j--;
+        }
+        return false;
+    }
+    
+private:
+    vector<int> vec;
 };
