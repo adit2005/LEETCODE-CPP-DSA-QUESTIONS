@@ -11,39 +11,25 @@
  */
 
 
-
 class Solution {
 public:
     int pseudoPalindromicPaths(TreeNode* root) {
-        int count = 0, path = 0;
+        return countPseudoPalindromicPaths(root, 0);
+    }
 
-        stack<pair<TreeNode*, int>> stk;
-        stk.push({root, 0});
-
-        while (!stk.empty()) {
-            auto [node, path] = stk.top();
-            stk.pop();
-
-            if (node != nullptr) {
-                
-                path = path ^ (1 << node->val);
-
-                
-                if (node->left == nullptr && node->right == nullptr) {
-                    
-                    if ((path & (path - 1)) == 0) {
-                        ++count;
-                    }
-                } else {
-                    stk.push({node->right, path});
-                    stk.push({node->left, path});
-                }
-            }
+private:
+    int countPseudoPalindromicPaths(TreeNode* node, int path) {
+        if (!node) {
+            return 0;
         }
 
-        return count;
+        path ^= (1 << node->val);
+
+        if (!node->left && !node->right) {
+            return (path & (path - 1)) == 0 ? 1 : 0;
+        }
+
+        return countPseudoPalindromicPaths(node->left, path) + countPseudoPalindromicPaths(node->right, path);
     }
 };
-
-
 
