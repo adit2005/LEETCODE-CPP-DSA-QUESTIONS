@@ -1,28 +1,28 @@
 class Solution {
 public:
     bool checkValidString(string s) {
-        int l=0,r=0;
-        int star=0;
-        for(auto it:s)
-        {
-            if(it=='(')l++;
-            else if(it==')')r++;
-            else star++;
-            if(r>l+star)return false;
-        }
-        bool f1= (l+star>=r);
-        l=0;
-        r=0;
-        star=0;
-        for(int i=s.size()-1;i>=0;i--)
-        {
-            if(s[i]=='(')l++;
-            else if(s[i]==')')r++;
-            else star++;
+        vector<vector<int>> dp(s.size()+1, vector<int>(s.size()+1,0));
+        dp[s.size()][0]=1;
 
-            if(l>r+star)return false;
+        for(int ind=s.size()-1; ind>=0; ind--){
+            for(int openingBracket=0; openingBracket<s.size(); openingBracket++){
+                bool ans=false;
+                if(s[ind]=='*'){
+                    ans|=dp[ind+1][openingBracket+1];
+                    if(openingBracket) ans|=dp[ind+1][openingBracket-1];
+                    ans|=dp[ind+1][openingBracket];
+                }else{
+                    if(s[ind]=='('){
+                        ans|=dp[ind+1][openingBracket+1];
+                    }else{
+                        if(openingBracket) ans|=dp[ind+1][openingBracket-1];
+                    }
+                }
+
+                dp[ind][openingBracket]=ans;
+            }
         }
-        bool f2=(r+star>=l);
-        return (f1 and f2);
+
+        return dp[0][0];
     }
 };
