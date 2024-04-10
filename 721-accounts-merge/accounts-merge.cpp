@@ -1,56 +1,45 @@
 class Solution {
 public:
-    unordered_set<string> visited;
-    unordered_map<string, vector<string>> adjacent;
-    
-    void DFS(vector<string>& mergedAccount, string& email) {
-        visited.insert(email);
-        // Add the email vector that contains the current component's emails
-        mergedAccount.push_back(email);
-        
-        for (string& neighbor : adjacent[email]) {
-            if (visited.find(neighbor) == visited.end()) {
-                DFS(mergedAccount, neighbor);
-            }
+    vector<int> parent;
+    int find_set(int x){
+        if(parent[x] == x) return x;
+        return parent[x] = find_set(parent[x]);
+    }
+
+    void make_union(int x, int y){
+        int a = find_set(x);
+        int b = find_set(y);
+        if(a != b){
+            parent[b] = a;
         }
     }
-    
-    vector<vector<string>> accountsMerge(vector<vector<string>>& accountList) {
-        int accountListSize = accountList.size();
-        
-         for (vector<string>& account : accountList) {
-            int accountSize = account.size();
-            
-            // Building adjacency list
-            // Adding edge between first email to all other emails in the account
-            string accountFirstEmail = account[1];
-            for (int j = 2; j < accountSize; j++) {
-                string email = account[j];
-                adjacent[accountFirstEmail].push_back(email);
-                adjacent[email].push_back(accountFirstEmail);
-            }
+
+    vector<vector<string>> accountsMerge(vector<vector<string>>& accounts) {
+        int n = accounts.size();
+        parent.resize(n);
+        unordered_map<string, int> emailtoId;
+        for(int i = 0; i<n; i++){
+           parent[i] = i;
+           for(int j = 1; j<accounts[i].size(); j++){
+               if(emailtoId.find(accounts[i][j]) != emailtoId.end()){
+                   make_union(emailtoId[accounts[i][j]], i);
+               }
+               else{
+                   emailtoId[accounts[i][j]] = parent[i];
+               }
+           }
         }
-        
-        // Traverse over all th accounts to store components
-        vector<vector<string>> mergedAccounts;
-        for (vector<string>& account : accountList) {
-            string accountName = account[0];
-            string accountFirstEmail = account[1];
-            
-            // If email is visited, then it's a part of different component
-            // Hence perform DFS only if email is not visited yet
-            if (visited.find(accountFirstEmail) == visited.end()) {
-                vector<string> mergedAccount;
-                // Adding account name at the 0th index
-                mergedAccount.push_back(accountName);
-                DFS(mergedAccount, accountFirstEmail);
-                // Skip the first element (name)
-                // Name should be the first element, we only need to sort the emails
-                sort(mergedAccount.begin() + 1, mergedAccount.end());
-                mergedAccounts.push_back(mergedAccount);
-            }
+        unordered_map<int, vector<string>> newaccounts;
+        for(auto it : emailtoId){
+            newaccounts[find_set(it.second)].push_back(it.first);
         }
-        
-        return mergedAccounts;
+        vector<vector<string>> ans;
+        for(auto &it : newaccounts){
+            auto &emails = it.second;
+                sort(emails.begin(), emails.end());
+                emails.insert(emails.begin(), accounts[it.first][0]);
+                ans.push_back(emails);
+        }
+        return ans;
     }
 };
