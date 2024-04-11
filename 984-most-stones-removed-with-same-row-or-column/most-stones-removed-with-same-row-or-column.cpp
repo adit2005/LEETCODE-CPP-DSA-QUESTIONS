@@ -1,21 +1,29 @@
 class Solution {
+private:
+    vector<int> parent;
+
+    int find(int n) { return parent[n] == n ? n : parent[n] = find(parent[n]); }
+
+    void unite(int a, int b) { parent[find(b)] = find(a); }
+
 public:
-    int dfs(vector<vector<int>>&stones,int index,vector<bool>&visited,int&n){
-        visited[index]=true;
-        int result=0;
-        for(int i=0;i<n;i++)
-            if(!visited[i]&&(stones[i][0]==stones[index][0]||stones[i][1]==stones[index][1]))
-                result +=(dfs(stones,i,visited,n) + 1);
-        return result;
-    }
-    int removeStones(vector<vector<int>>&stones) {
-        int n = stones.size();
-        vector<bool>visited(n,0);
-        int result=0;
-        for(int i=0;i<n;i++){
-            if(visited[i]){continue;}
-            result+=dfs(stones,i,visited,n);
+    int removeStones(vector<vector<int>>& stones) {
+        unordered_map<int, vector<int>> rowmap, colmap;
+        parent.resize(stones.size());
+
+        for (int i = 0; i < stones.size(); i++) {
+            rowmap[stones[i][0]].push_back(i);
+            colmap[stones[i][1]].push_back(i);
+            parent[i] = i;
         }
-        return result;
+
+        for (int i = 0; i < stones.size(); i++) {
+            for (int j : rowmap[stones[i][0]]) unite(i, j);
+            for (int j : colmap[stones[i][1]]) unite(i, j);
+        }
+
+        unordered_set<int> unique;
+        for (int n : parent) unique.insert(find(n));
+        return stones.size() - unique.size();
     }
 };
