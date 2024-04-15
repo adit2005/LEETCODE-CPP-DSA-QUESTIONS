@@ -1,24 +1,28 @@
 class Solution {
 public:
-    int permutation(int n, int r)
-    {
-        if(r == 0)
-        {
-            return 1;
-        }else{
-            return n * permutation(n - 1, r - 1);
-        }
-    }
     int countNumbersWithUniqueDigits(int n) {
-        int sum = 1;
-        if(n > 0)
-        {
-           int end = (n > 10)? 10 : n;
-           for(int i = 0; i < end; i++)
-           {
-               sum += 9 * permutation(9, i);
-           }
+
+        long long prevFactorial, curFactorial;
+        vector<vector<int>> nCk(11, vector<int>(11));
+        int dpOneBack;
+
+        dpOneBack = 1;
+        curFactorial = 1;
+        nCk[0][0] = 1;
+
+        for (int i = 1; i < 11; ++i){
+            for (int k = 0; k <= i; ++k){
+                nCk[i][k] = ((k == 0 || k >= i) ? 1 : nCk[i - 1][k - 1] + nCk[i - 1][k]);
+            }
         }
-        return sum;
+        
+        for (int i = 1; i <= n; ++i)
+        {
+            prevFactorial = curFactorial;
+            curFactorial = i * prevFactorial;
+            dpOneBack = (((curFactorial * nCk[10][i]) - (prevFactorial * nCk[9][i - 1])) + dpOneBack);
+        }
+
+        return dpOneBack;
     }
 };
