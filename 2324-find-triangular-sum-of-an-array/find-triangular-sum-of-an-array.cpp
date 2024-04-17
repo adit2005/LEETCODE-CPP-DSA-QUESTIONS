@@ -1,12 +1,10 @@
+int c[1001][1001] = {};
 class Solution {
 public:
-    int triangularSum(vector<int>& nums) {
-        int n=nums.size();
-        for(int i=n-1;i>=1;i--){
-            for(int j=0;j<i;j++){
-                nums[j]=(nums[j]+nums[j+1])%10;                
-            }
-        }
-        return nums[0];
-    }
+int triangularSum(vector<int>& nums) {
+    for (int  n = 1; n <= nums.size(); ++n) // compute once for all test cases.
+        for (int r = 0; r < n; ++r) 
+            c[n][r] = r == 0 ? 1 : (c[n - 1][r - 1] + c[n - 1][r]) % 10;
+    return inner_product(begin(nums), end(nums), begin(c[nums.size()]), 0) % 10;
+}
 };
