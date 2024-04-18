@@ -1,36 +1,40 @@
 class Solution {
 public:
-  vector<string> findAllRecipes(vector<string>& recipes, vector<vector<string>>& ingredients, vector<string>& supplies) {
+    vector<string> findAllRecipes(vector<string> &recipes, vector<vector<string>> &ingredients, vector<string> &supplies)
+    {
+        // create Directed graph from ingredients to the recipe and store indegree
+       map<string, int> indegree;
+       map<string, vector<string>> adj;
+        for (int i = 0; i < ingredients.size(); i++)
+        {
+            for (string ing : ingredients[i])
+            {
+                adj[ing].push_back(recipes[i]);
+                indegree[recipes[i]]++;
+            }
+        }
 
-	unordered_map<string,bool> available;
-	vector<string> res;
-	for(auto str:supplies)
-		available[str]=true;
-	bool keepCooking=true;
-	int n=recipes.size();
-	vector<int> created(n,0);
-	while(keepCooking)
-	{
-		keepCooking=false;
-		for(int i=0;i<n;i++)
-		{
-			if(created[i])
-				continue;
-			int count=ingredients[i].size();
-			for(auto &s:ingredients[i])
-			{
-				if(available.find(s)!=available.end())
-					count--;
-			}
-			if(!count)
-			{
-				keepCooking=true;
-				created[i]=1;
-				available[recipes[i]]=true;
-				res.push_back(recipes[i]);
-			}
-		}
-	}
-  return res;
-} 
+        queue<string> q;
+        vector<string> ans;
+    
+        for(string item : supplies)
+           // if(indegree[item] == 0)
+                q.push(item);
+
+        while(!q.empty())
+        {
+            string item = q.front();
+            q.pop();
+            for(string recipe : adj[item])
+            {
+                --indegree[recipe];
+                if(indegree[recipe] == 0)
+                {
+                    q.push(recipe);
+                     ans.push_back(recipe);
+                }
+            }
+        }
+        return ans;
+    }
 };
