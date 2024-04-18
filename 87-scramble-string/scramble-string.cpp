@@ -1,43 +1,26 @@
 class Solution {
 public:
-    unordered_map<string, bool> mp;
-    bool solve(string s1, string s2) {
-
-        if(s1 == s2) //both string empty covered here too
-            return true;
-        if(s1.length() != s2.length())
-            return false;
-
-        string key = s1 + "_" + s2;
-        if(mp.find(key) != mp.end())
-            return mp[key];
-
-        bool result = false;
-        int n = s1.length();
-        for(int i = 1; i<n; i++) {
-            
-
-            bool swapped = solve(s1.substr(0, i), s2.substr(n-i, i)) &&
-                           solve(s1.substr(i, n-i), s2.substr(0, n-i));
-            if(swapped) { //if we find they are scrambled, we don't need to check further
-                result = true;
-                break;
+    bool isScramble(string s1, string s2) {
+        if(s1.size() != s2.size()) return false;
+        int n = s1.size();
+        vector dp(n + 1, vector(n+1, vector<int>(n+1)));
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                dp[1][i][j] = s1[i] == s2[j];
             }
-           
-
-            bool not_swapped = solve(s1.substr(0, i), s2.substr(0, i)) &&
-                               solve(s1.substr(i, n-i), s2.substr(i, n-i));
-            if(not_swapped) { //if we find they are scrambled, we don't need to check further
-                result = true;
-                break;
-            }
-
         }
-
-        return mp[key] = result;
-    }
-    bool isScramble(string &s1, string &s2) {
-        mp.clear();
-        return solve(s1, s2);
+        for (int length = 2; length <= n; length++) {
+            for (int i = 0; i < n + 1 - length; i++) {
+                for (int j = 0; j < n + 1 - length; j++) {
+                    for (int newLength = 1; newLength < length; newLength++) {
+                        const vector<int>& dp1 = dp[newLength][i];
+                        const vector<int>& dp2 = dp[length - newLength][i + newLength];
+                        dp[length][i][j] |= dp1[j] && dp2[j + newLength];
+                        dp[length][i][j] |= dp1[j + length - newLength] && dp2[j];
+                    }
+                }
+            }
+        }
+        return dp[n][0][0];
     }
 };
