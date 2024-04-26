@@ -1,19 +1,29 @@
 class Solution {
 public:
+   bool solve(vector<int>& piles, int start, int end, bool turn,vector<vector<int>> &dp)
+    {
+        if(start>end)
+        return 0;
+
+        if(dp[start][end]!=-1)
+        return dp[start][end];
+
+
+        if(turn)
+        {
+            int rr1 = solve(piles,start+1,end,false,dp) + piles[start];
+            int rr2 = solve(piles,start,end-1,false,dp) + piles[end];
+            return dp[start][end] = max(rr1,rr2);
+        }
+        int rr1 = solve(piles,start+1,end,true,dp) - piles[start];
+        int rr2 = solve(piles,start,end-1,true,dp) - piles[end];
+        return dp[start][end] = max(rr1,rr2);
+    }
     bool stoneGame(vector<int>& piles) {
-        int N = piles.size();
-        int dp[N+2][N+2];
-        memset(dp, 0, sizeof(dp));
-
-        for (int size = 1; size <= N; ++size)
-            for (int i = 0, j = size - 1; j < N; ++i, ++j) {
-                int parity = (j + i + N) % 2; 
-                if (parity == 1)
-                    dp[i+1][j+1] = max(piles[i] + dp[i+2][j+1], piles[j] + dp[i+1][j]);
-                else
-                    dp[i+1][j+1] = min(-piles[i] + dp[i+2][j+1], -piles[j] + dp[i+1][j]);
-            }
-
-        return dp[1][N] > 0;
+        int start = 0, end = piles.size()-1;
+        bool turn = true;
+        int n = piles.size();
+        vector<vector<int>> dp(n+1,vector<int>(n+1,-1));
+        return solve(piles,start,end,turn,dp);
     }
 };
