@@ -20,6 +20,7 @@ public:
                 swap(s1[i], s1[k]);
             }
         }
+         mp[s1] = ans;
         return ans;
     }
 
