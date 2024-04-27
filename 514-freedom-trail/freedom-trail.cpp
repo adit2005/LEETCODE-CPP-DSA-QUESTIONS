@@ -1,8 +1,27 @@
 class Solution {
 public:
     int findRotateSteps(string ring, string key) {
-        unordered_map<int, unordered_map<int, int>> bestSteps;
-        return tryLock(0, 0, ring, key, INT_MAX, bestSteps);
+        int ringLen = ring.length();
+        int keyLen = key.length();
+        vector<int> curr(ringLen, 0);
+        vector<int> prev(ringLen, 0);
+        fill(prev.begin(), prev.end(), 0);
+        // For each occurrence of the character at key_index of key in ring
+        // Stores minimum steps to the character from ringIndex of ring
+        for (int keyIndex = keyLen - 1; keyIndex >= 0; keyIndex--) {
+            fill(curr.begin(), curr.end(), INT_MAX);
+            for (int ringIndex = 0; ringIndex < ringLen; ringIndex++) {
+                for (int charIndex = 0; charIndex < ringLen; charIndex++) {
+                    if (ring[charIndex] == key[keyIndex]) {
+                        curr[ringIndex] = min(curr[ringIndex],
+                                1 + countSteps(ringIndex, charIndex, ringLen) + prev[charIndex]);
+                    }
+                }
+            }
+            prev = curr;
+        }
+
+        return prev[0];
     }
 
 private:
@@ -11,28 +30,5 @@ private:
         int stepsBetween = abs(curr - next);
         int stepsAround = ringLength - stepsBetween;
         return min(stepsBetween, stepsAround);
-    }
-
-    int tryLock(int ringIndex, int keyIndex, string ring, string key, int minSteps,
-                unordered_map<int, unordered_map<int, int>>& bestSteps) {
-        // If we have already calculated this sub-problem, return the result
-        if (bestSteps[ringIndex][keyIndex]) {
-            return bestSteps[ringIndex][keyIndex];
-        }
-        // If we reach the end of the key, it has been spelled
-        if (keyIndex == key.length()) {
-            return 0;
-        }
-        // For each occurrence of the character at key_index of key in ring
-        // Calculate and save the minimum steps to that character from the ringIndex of ring
-        for (int charIndex = 0; charIndex < ring.length(); charIndex++) {
-            if (ring[charIndex] == key[keyIndex]) {
-                int totalSteps = countSteps(ringIndex, charIndex, ring.length()) + 1
-                                            + tryLock(charIndex, keyIndex + 1, ring, key, INT_MAX, bestSteps);
-                minSteps = min(minSteps, totalSteps);
-                bestSteps[ringIndex][keyIndex] = minSteps;
-            }
-        }
-        return minSteps;
     }
 };
