@@ -1,40 +1,38 @@
 class Solution {
 public:
-    int mod = 1e9 + 7;
-    int dp[202][202][2];
+    int MOD = 1e9 + 7;
+    int limit;
+    vector<vector<vector<vector<int>>>> dp;
     
-    int solve(int one, int zero, bool ms, int limit) {
-        if (one == 0 && zero == 0) 
-            return 1;
-
-        if (zero < 0 || one < 0) 
-          return 0;
-    
-        int ans = 0;
-      
-        if (dp[one][zero][ms] != -1)
-            return dp[one][zero][ms]; 
+    int f(int z, int o, int prev, int cons){
+        if(z<0 || o<0 || cons > limit) return 0;
+        if(z==0 && o==0) return 1;
         
-        if (ms == true) {
-            for (int i = 1; i <= min(one, limit); i++) {
-                ans = (ans + solve(one - i, zero, false, limit) % mod) % mod;
-            }
+        if(dp[z][o][prev][cons] != -1) return dp[z][o][prev][cons];
+        int res = 0;
+        
+        if(prev==0){
+            int a = f(z-1, o, 0, cons+1);
+            int b = f(z, o-1, 1, 1);
+            
+            res = (a+b)%MOD;
         }
-        else if (ms == false) {
-            for (int i = 1; i <= min(zero, limit); i++) {
-                ans = (ans + solve(one, zero - i, true, limit) % mod) % mod;
-            }
+        else{
+            int a = f(z-1, o, 0, 1);
+            int b = f(z, o-1, 1, cons+1);
+            
+            res = (a+b)%MOD;
         }
         
-        return dp[one][zero][ms] = ans % mod; 
+        return dp[z][o][prev][cons] = res;
     }
-    
     int numberOfStableArrays(int zero, int one, int limit) {
-        memset(dp, -1, sizeof(dp));
+        this->limit = limit;
+        dp = vector<vector<vector<vector<int>>>>(zero+1,vector<vector<vector<int>>>(one+1, vector<vector<int>>(2, vector<int>(limit+1, -1))));
+
+        int a = f(zero, one-1, 1, 1);
+        int b = f(zero-1, one, 0, 1);
         
-        int a = solve(one, zero, true, limit) % mod;
-        int b = solve(one, zero, false, limit) % mod;
-        
-        return (a + b) % mod;    
+        return (a+b)%MOD;
     }
 };
