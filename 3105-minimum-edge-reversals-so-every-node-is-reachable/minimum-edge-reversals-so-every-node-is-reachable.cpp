@@ -1,27 +1,47 @@
+#include <vector>
+#include <unordered_map>
+#include <map>
+using namespace std;
+
 class Solution {
+private:
+    unordered_map<int, unordered_map<int, int>> graph; // Store edge weights
+
+    map<pair<int, int>, int> dp;
+
+    int dfs(int node, int parent) {
+        if (dp.find({node, parent}) != dp.end())
+            return dp[{node, parent}];
+        
+        int ans = 0;
+        for (const auto& neighbor : graph[node]) {
+            int neighborNode = neighbor.first;
+            int weight = neighbor.second;
+            if (neighborNode != parent)
+                ans += dfs(neighborNode, node) + weight; // Include the edge weight
+        }
+        
+        dp[{node, parent}] = ans;
+        return ans;
+    }
+
 public:
-        vector<int> minEdgeReversals(int n, vector<vector<int>>& edges) {
-        unordered_map<int, unordered_map<int, int>> G, dp;
-        for (auto& e : edges) {
-          G[e[0]][e[1]] = 0, G[e[1]][e[0]] = 1;
-          dp[e[0]][e[1]] = dp[e[1]][e[0]] = dp[-1][e[0]] = dp[-1][e[1]] = -1;
+    vector<int> minEdgeReversals(int n, vector<vector<int>>& edges) {
+        graph.clear(); // Clear the graph
+        
+        // Populate the graph with edges and weights
+        for (auto& edge : edges) {
+            int from = edge[0], to = edge[1];
+            graph[from][to] = 0; // Store edge weight
+            graph[to][from] = 1; // Add the reverse edge with weight 0
         }
-
-        function<int(int, int)> dfs = [&](int i, int j) {
-          if (dp[i][j] >= 0)
-              return dp[i][j];
-          dp[i][j] = 0;
-          for (const auto& k : G[j]) {
-            if (k.first == i) continue;
-            dp[i][j] += dfs(j, k.first) + k.second;
-          }
-          return dp[i][j];
-        };
-
-        vector<int> res(n);
-        for (int i = 0; i < n; i++) {
-          res[i] = dfs(-1, i);
+        
+        vector<int> ans;
+        dp.clear(); // Clear the memoization table
+        for (int i = 0; i < n; ++i) {
+            ans.push_back(dfs(i, -1));
         }
-        return res;
+        
+        return ans;
     }
 };
