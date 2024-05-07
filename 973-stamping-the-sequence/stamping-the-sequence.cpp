@@ -2,7 +2,7 @@ class Solution {
 public:
     // Function to check if stamp can be placed at index i in target string
     bool isequal(int i, string s, string t) {
-    for (int j = 0; j < s.size() || (t[j+i] != '?' && j < s.size()); j++) {
+    for (int j = 0; j < s.size(); j++) {
         if (t[j+i] != '?' && t[j+i] != s[j])
             return false;
     }
