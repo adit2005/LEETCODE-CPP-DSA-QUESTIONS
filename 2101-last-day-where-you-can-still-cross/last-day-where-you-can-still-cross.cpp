@@ -23,6 +23,8 @@ public:
         }
         
         while (!q.empty()) {
+            int l = q.size();
+            while(l--){
             pair<int, int> p = q.front();
             q.pop();
             int r = p.first, c = p.second; // Current cell coordinates
@@ -38,6 +40,7 @@ public:
                     q.push({nr, nc}); // Add the neighbor cell to the queue for further exploration
                 }
             }
+        }
         }
         return false; // Unable to find a path to the bottom row
     }
