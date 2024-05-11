@@ -1,25 +1,38 @@
 class Solution {
 public:
     int getMoneyAmount(int n) {
-        vector<vector<int>> dp(n+2,vector<int> (n+2,-1));
-        return f(1,n,dp);
-    }
-
-    int f(int i, int j, vector<vector<int>> &dp) {
-        // base cases
-        if(i == j) return 0; // if there is only one number for eg - 1, best strategy is to pick 0
-        if(i+1 == j) return i; // if there are two numbers for eg - 1,2, best strategy is to pick the smaller one
-        if(i+2 == j) return i+1; // if there are three numbers for eg - 1,2, best strategy is to pick the middle one
-
-        if(dp[i][j] != -1) return dp[i][j];
-
-        int ans = 1e9;
-        for(int k=i ; k<=j ; k++) {
-            int ansIsOnLeft = k + f(i,k-1,dp);
-            int ansIsOnRight = k + f(k+1,j,dp);
-
-            ans = min(ans,max(ansIsOnLeft,ansIsOnRight)); // since we need to guarantee a win regardless of what no. we pick, we take max of ansIsOnLeft and ansIsOnRight
+        // Initialize a 2D vector to store the minimum cost of guessing a number
+        vector<vector<int>> dp(n + 1, vector<int>(n + 1, 0));
+        
+        // Iterate over all possible lengths of subranges
+        for (int len = 2; len <= n; ++len) {
+            // Iterate over all possible starting points of subranges
+            for (int begin = 1; begin <= n - len + 1; ++begin) {
+                // Calculate the end point of the current subrange
+                int end = begin + len - 1;
+                
+                // Iterate over all possible numbers to guess within the current subrange
+                for (int i = begin; i <= end; ++i) {
+                    int numPicked = i; // Number picked for guessing
+                    
+                    // If the number picked is the first number in the subrange
+                    if (i == begin) {
+                        // Calculate the cost of guessing the first number
+                        dp[begin][end] = numPicked + dp[begin + 1][end];
+                    } else if (i == end) {
+                        // If the number picked is the last number in the subrange
+                        dp[begin][end] = min(dp[begin][end], dp[begin][end - 1] + numPicked);
+                    } else {
+                        // Otherwise, calculate the minimum cost between two options:
+                        // 1. Guessing a number before the current position
+                        // 2. Guessing a number after the current position
+                        dp[begin][end] = min(dp[begin][end], max(dp[begin][i - 1], dp[i + 1][end]) + numPicked);
+                    }
+                }
+            }
         }
-        return dp[i][j] = ans;
+
+        // Return the minimum cost of guessing a number in the range [1, n]
+        return dp[1][n];
     }
 };
