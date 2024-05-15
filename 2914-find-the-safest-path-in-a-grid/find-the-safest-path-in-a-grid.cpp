@@ -3,19 +3,15 @@ public:
 
     int maximumSafenessFactor(vector<vector<int>>& grid) {
         int n = grid.size();
-
         queue<pair<int, int>> multiSourceQueue;
-        // Mark thieves as 0 and empty cells as -1, and push thieves to the
-        // queue
+
+        // Mark thieves as 0 and empty cells as -1, and push thieves to the queue
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (grid[i][j] == 1) {
-                    // Push thief coordinates to the queue
                     multiSourceQueue.push({i, j});
-                    // Mark thief cell with 0
                     grid[i][j] = 0;
                 } else {
-                    // Mark empty cell with -1
                     grid[i][j] = -1;
                 }
             }
@@ -32,9 +28,8 @@ public:
                     int di = curr.first + d[0];
                     int dj = curr.second + d[1];
                     int val = grid[curr.first][curr.second];
-                    // Check if the cell is valid and unvisited
+                    // Check if the neighboring cell is valid and unvisited
                     if (isValidCell(grid, di, dj) && grid[di][dj] == -1) {
-                        // Update safeness factor and push to the queue
                         grid[di][dj] = val + 1;
                         multiSourceQueue.push({di, dj});
                     }
@@ -42,28 +37,37 @@ public:
             }
         }
 
-        // Binary search for maximum safeness factor
-        int start = 0;
-        int end = 0;
-        int res = -1;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                // Set end as the maximum safeness factor possible
-                end = max(end, grid[i][j]);
-            }
-        }
-        while (start <= end) {
-            int mid = start + (end - start) / 2;
-            if (isValidSafeness(grid, mid)) {
-                // Store valid safeness and search for larger ones
-                res = mid;
-                start = mid + 1;
-            } else {
-                end = mid - 1;
-            }
-        }
+        // Priority queue to prioritize cells with higher safeness factor
+        priority_queue<vector<int>> pq;
+        // Push starting cell to the priority queue
+        pq.push(vector<int>{grid[0][0], 0, 0}); // [maximum_safeness_till_now, x-coordinate, y-coordinate]
+        grid[0][0] = -1; // Mark the source cell as visited
 
-        return res;
+        int ans = -1 ; 
+
+        // BFS to find the path with maximum safeness factor
+        while (!pq.empty()) {
+            auto curr = pq.top();
+            pq.pop();
+
+            // If reached the destination, return safeness factor
+            if (curr[1] == n - 1 && curr[2] == n - 1) {
+                ans = max(ans , curr[0]);
+            }
+
+            // Explore neighboring cells
+            for (auto& d : dir) {
+                int di = d[0] + curr[1];
+                int dj = d[1] + curr[2];
+                if (isValidCell(grid, di, dj) && grid[di][dj] != -1) {
+                    // Update safeness factor for the path and mark the cell as visited
+                    pq.push(vector<int>{min(curr[0], grid[di][dj]), di, dj});
+                    grid[di][dj] = -1;
+                }
+            }
+        }
+        if(ans >= 0 ) return ans;
+        return -1; // No valid path found
     }
 
 private:
@@ -72,46 +76,8 @@ private:
     vector<vector<int>> dir = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
     // Check if a given cell lies within the grid
-    bool isValidCell(vector<vector<int>>& grid, int i, int j) {
-        int n = grid.size();
+    bool isValidCell(vector<vector<int>>& mat, int i, int j) {
+        int n = mat.size();
         return i >= 0 && j >= 0 && i < n && j < n;
-    }
-
-    // Check if a path exists with given minimum safeness value
-    bool isValidSafeness(vector<vector<int>>& grid, int minSafeness) {
-        int n = grid.size();
-
-        // Check if the source and destination cells satisfy minimum safeness
-        if (grid[0][0] < minSafeness || grid[n - 1][n - 1] < minSafeness) {
-            return false;
-        }
-
-        queue<pair<int, int>> traversalQueue;
-        vector<vector<bool>> visited(n, vector<bool>(n, false));
-        traversalQueue.push({0, 0});
-        visited[0][0] = true;
-
-        // Breadth-first search to find a valid path
-        while (!traversalQueue.empty()) {
-            auto curr = traversalQueue.front();
-            traversalQueue.pop();
-            if (curr.first == n - 1 && curr.second == n - 1) {
-                return true; // Valid path found  
-                 
-            }
-            // Check neighboring cells
-            for (auto& d : dir) {
-                int di = curr.first + d[0];
-                int dj = curr.second + d[1];
-                // Check if the neighboring cell is valid and unvisited
-                if (isValidCell(grid, di, dj) && !visited[di][dj] &&
-                    grid[di][dj] >= minSafeness) {
-                    visited[di][dj] = true;
-                    traversalQueue.push({di, dj});
-                }
-            }
-        }
-
-        return false; // No valid path found
     }
 };
