@@ -43,8 +43,6 @@ public:
         pq.push(vector<int>{grid[0][0], 0, 0}); // [maximum_safeness_till_now, x-coordinate, y-coordinate]
         grid[0][0] = -1; // Mark the source cell as visited
 
-        int ans = -1 ; 
-
         // BFS to find the path with maximum safeness factor
         while (!pq.empty()) {
             auto curr = pq.top();
@@ -52,7 +50,7 @@ public:
 
             // If reached the destination, return safeness factor
             if (curr[1] == n - 1 && curr[2] == n - 1) {
-                ans = max(ans , curr[0]);
+                return curr[0];
             }
 
             // Explore neighboring cells
@@ -66,7 +64,7 @@ public:
                 }
             }
         }
-        if(ans >= 0 ) return ans;
+
         return -1; // No valid path found
     }
 
