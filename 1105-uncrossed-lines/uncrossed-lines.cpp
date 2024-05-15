@@ -4,10 +4,9 @@ public:
         int n1 = nums1.size();
         int n2 = nums2.size();
 
-        vector<int> dpPrev(n2 + 1);
+        vector<int> dp(n2 + 1,0), dpPrev(n2 + 1,0);
 
         for (int i = 1; i <= n1; i++) {
-            vector<int> dp(n2 + 1);
             for (int j = 1; j <= n2; j++) {
                 if (nums1[i - 1] == nums2[j - 1]) {
                     dp[j] = 1 + dpPrev[j - 1];
@@ -18,6 +17,6 @@ public:
             dpPrev = dp; // Update dpPrev with the values of dp for the next iteration
         }
 
-        return dpPrev[n2]; // Return the value of dp at the end
+        return dp[n2]; // Return the value of dp at the end
     }
 };
