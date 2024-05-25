@@ -1,37 +1,50 @@
 class Solution {
 public:
     vector<string> wordBreak(string s, vector<string>& wordDict) {
-        unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
-        unordered_map<string, vector<string>> memoization;
-        return dfs(s, wordSet, memoization);
+        // Map to store results of subproblems
+        unordered_map<int, vector<string>> dp;
+
+        // Iterate from the end of the string to the beginning
+        for (int startIdx = s.size(); startIdx >= 0; startIdx--) {
+            // List to store valid sentences starting from startIdx
+            vector<string> validSentences;
+
+            // Iterate from startIdx to the end of the string
+            for (int endIdx = startIdx; endIdx < s.size(); endIdx++) {
+                // Extract substring from startIdx to endIdx
+                string currentWord = s.substr(startIdx, endIdx - startIdx + 1);
+
+                // Check if the current substring is a valid word
+                if (isWordInDict(currentWord, wordDict)) {
+                    // If it's the last word, add it as a valid sentence
+                    if (endIdx == s.size() - 1) {
+                        validSentences.push_back(currentWord);
+                    } else {
+                        // If it's not the last word, append it to each sentence
+                        // formed by the remaining substring
+                        vector<string> sentencesFromNextIndex = dp[endIdx + 1];
+                        for (const auto& sentence : sentencesFromNextIndex) {
+                            validSentences.push_back(currentWord + " " +
+                                                     sentence);
+                        }
+                    }
+                }
+            }
+            // Store the valid sentences in dp
+            dp[startIdx] = validSentences;
+        }
+        // Return the sentences formed from the entire string
+        return dp[0];
     }
 
 private:
-    // Depth-first search function to find all possible word break combinations
-    vector<string> dfs(const string& remainingStr,
-                       const unordered_set<string>& wordSet,
-                       unordered_map<string, vector<string>>& memoization) {
-        // Check if result for this substring is already memoized
-        if (memoization.count(remainingStr)) return memoization[remainingStr];
-        // Base case: when the string is empty, return a list containing an
-        // empty string
-        if (remainingStr.empty()) return {""};
-        vector<string> results;
-        for (int i = 1; i <= remainingStr.length(); ++i) {
-            string currentWord = remainingStr.substr(0, i);
-            // If the current substring is a valid word
-            if (wordSet.count(currentWord)) {
-                for (const string& nextWord :
-                     dfs(remainingStr.substr(i), wordSet, memoization)) {
-                    // Append current word and next word with space in between
-                    // if next word exists
-                    results.push_back(currentWord +
-                                      (nextWord.empty() ? "" : " ") + nextWord);
-                }
+    // Helper function to check if a word is in the word dictionary
+    bool isWordInDict(const string& word, const vector<string>& wordDict) {
+        for (const auto& dictWord : wordDict) {
+            if (dictWord == word) {
+                return true;
             }
         }
-        // Memoize the results for the current substring
-        memoization[remainingStr] = results;
-        return results;
+        return false;
     }
 };
