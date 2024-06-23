@@ -1,36 +1,35 @@
 class Solution {
 public:
     int longestSubarray(vector<int>& nums, int limit) {
-        priority_queue<pair<int, int>> maxHeap;
-        priority_queue<pair<int, int>, vector<pair<int, int>>,
-                       greater<pair<int, int>>>
-            minHeap;
+        deque<int> maxDeque, minDeque;
+        int left = 0, right;
+        int maxLength = 0;
 
-        int left = 0, maxLength = 0;
+        for (right = 0; right < nums.size(); ++right) {
+            // Maintain the maxDeque in decreasing order
+            while (!maxDeque.empty() && maxDeque.back() < nums[right]) {
+                maxDeque.pop_back();
+            }
+            maxDeque.push_back(nums[right]);
 
-        for (int right = 0; right < nums.size(); ++right) {
-            maxHeap.push({nums[right], right});
-            minHeap.push({nums[right], right});
+            // Maintain the minDeque in increasing order
+            while (!minDeque.empty() && minDeque.back() > nums[right]) {
+                minDeque.pop_back();
+            }
+            minDeque.push_back(nums[right]);
 
-            // Check if the absolute difference between the maximum and minimum
-            // values in the current window exceeds the limit
-            while (maxHeap.top().first - minHeap.top().first > limit) {
-                // Move the left pointer to the right until the condition is
-                // satisfied. This ensures we remove the element causing the
-                // violation
-                left = min(maxHeap.top().second, minHeap.top().second) + 1;
-
-                // Remove elements from the heaps that are outside the current
-                // window
-                while (maxHeap.top().second < left) {
-                    maxHeap.pop();
+            // Check if the current window exceeds the limit
+            while (maxDeque.front() - minDeque.front() > limit) {
+                // Remove the elements that are out of the current window
+                if (maxDeque.front() == nums[left]) {
+                    maxDeque.pop_front();
                 }
-                while (minHeap.top().second < left) {
-                    minHeap.pop();
+                if (minDeque.front() == nums[left]) {
+                    minDeque.pop_front();
                 }
+                ++left;
             }
 
-            // Update maxLength with the length of the current valid window
             maxLength = max(maxLength, right - left + 1);
         }
 
