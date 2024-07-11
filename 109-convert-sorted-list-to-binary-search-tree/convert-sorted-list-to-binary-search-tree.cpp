@@ -22,24 +22,38 @@
 class Solution {
  public:
   TreeNode* sortedListToBST(ListNode* head) {
-    vector<int> A;
-
-    // Construct the array.
-    for (ListNode* curr = head; curr; curr = curr->next)
-      A.push_back(curr->val);
-
-    return helper(A, 0, A.size() - 1);
+    this->head = head;
+    return helper(0, getLength(head) - 1);
   }
 
  private:
-  TreeNode* helper(const vector<int>& A, int l, int r) {
+  ListNode* head;
+
+  TreeNode* helper(int l, int r) {
     if (l > r)
       return nullptr;
 
     const int m = (l + r) / 2;
-    TreeNode* root = new TreeNode(A[m]);
-    root->left = helper(A, l, m - 1);
-    root->right = helper(A, m + 1, r);
+
+    // Simulate inorder traversal: recursively form the left half.
+    TreeNode* left = helper(l, m - 1);
+
+    // Once the left half is traversed, process the current node.
+    TreeNode* root = new TreeNode(head->val);
+    root->left = left;
+
+    // Maintain the invariance.
+    head = head->next;
+
+    // Simulate inorder traversal: recursively form the right half.
+    root->right = helper(m + 1, r);
     return root;
+  }
+
+  int getLength(ListNode* head) {
+    int length = 0;
+    for (ListNode* curr = head; curr; curr = curr->next)
+      ++length;
+    return length;
   }
 };
