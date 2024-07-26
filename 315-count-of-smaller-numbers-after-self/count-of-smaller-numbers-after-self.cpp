@@ -1,65 +1,57 @@
-class Solution {
+class BIT {
+private:
+    vector<int> bit;
+    int n;
+
 public:
-    // Function to merge two halves of the array and count the smaller elements
-    void merge(vector<int> &count, vector<pair<int, int>> &v, int left, int mid, int right) {
-        // Temporary array to store merged results
-        vector<pair<int, int>> tmp(right-left+1);
-        int i = left;
-        int j = mid+1;
-        int k = 0;
-
-        while (i <= mid && j <= right) {
-            // Sorting in descending order
-            if (v[i].first <= v[j].first) { 
-                tmp[k++] = v[j++];
-            } else {
-                // Update the count for the current element
-                // Since v[i].first > v[j].first, all elements from v[j] to v[right] are smaller than v[i]
-                count[v[i].second] += right - j + 1;
-                tmp[k++] = v[i++];
-            }
-        }
-        // Copy remaining elements from the left half
-        while (i <= mid) {
-            tmp[k++] = v[i++];
-        }
-        // Copy remaining elements from the right half
-        while (j <= right) {
-            tmp[k++] = v[j++];
-        }
-        // Copy merged results back to the original array
-        for (int i = left; i <= right; i++) {
-            v[i] = tmp[i-left];
-        }
-    }        
-
-    // Function to perform merge sort and count smaller elements
-    void mergeSort(vector<int> &count, vector<pair<int, int>> &v, int left, int right) {
-        if (left >= right) 
-            return;
-
-        int mid = left + (right-left)/2;
-        // Sort and count the left half
-        mergeSort(count, v, left, mid);
-        // Sort and count the right half
-        mergeSort(count, v, mid+1, right);
-        // Merge the two halves and count smaller elements
-        merge(count, v, left, mid, right);
+    BIT(int size = 20001) { // Default size to handle range [-10^4, 10^4] shifted to [0, 2*10^4]
+        n = size;
+        bit.assign(n, 0);
     }
 
-    // Main function to count smaller elements
+    // Update the BIT with the given value at the given index
+    void update(int idx, int val) {
+        while (idx < n) {
+            bit[idx] += val; // Add val to the current index
+            idx = idx | (idx + 1); // Move to the next index that needs to be updated
+        }
+    }
+
+    // Query the sum of values up to the given index
+    int query(int idx) {
+        int s = 0; // Initialize sum
+        while (idx >= 0) {
+            s += bit[idx]; // Add the value at the current index to the sum
+            idx = (idx & (idx + 1)) - 1; // Move to the next index to sum
+        }
+        return s; // Return the total sum
+    }
+
+    // Convert an index to the BIT index
+    int getidx(int idx) {
+        return idx + 10000; // Shift the index by 10^4 to handle negative values
+    }
+};
+
+class Solution {
+public:
     vector<int> countSmaller(vector<int>& nums) {
-        int N = nums.size();
-        // Create a vector of pairs to store the value and its original index
-        vector<pair<int, int>> v(N);
-        for (int i = 0; i < N; i++)   
-            v[i] = make_pair(nums[i], i);
+        vector<int> ans; // Vector to store the result
+        BIT bit; // Initialize the BIT
 
-        // Initialize the count array with zeros
-        vector<int> count(N, 0);
-        // Perform merge sort to count smaller elements
-        mergeSort(count, v, 0, N-1);
+        // Update the BIT with the frequencies of each element in the array
+        for (int i : nums) {
+            bit.update(bit.getidx(i), 1);
+        }
 
-        return count;
+        // For each element in the array, count the number of smaller elements to the right
+        for (int i : nums) {
+            // Query the BIT to get the count of elements smaller than the current element
+            ans.push_back(bit.query(bit.getidx(i - 1)));
+            // Update the BIT to remove the current element (as it has been processed)
+            bit.update(bit.getidx(i), -1);
+        }
+
+        return ans; // Return the result
     }
 };
