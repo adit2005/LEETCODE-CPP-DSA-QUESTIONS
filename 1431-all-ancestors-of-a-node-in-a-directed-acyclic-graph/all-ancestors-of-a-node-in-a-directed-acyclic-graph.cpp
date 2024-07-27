@@ -1,36 +1,72 @@
 class Solution {
 public:
-    vector<vector<int>> getAncestors(int n, vector<vector<int>>& edges) {
-        // Initialize adjacency list for each node and ancestors list
+    std::vector<std::vector<int>> getAncestors(int n, std::vector<std::vector<int>>& edges) {
+        // Create adjacency list to represent the graph
         vector<vector<int>> adjacencyList(n);
-        vector<vector<int>> ancestors(n);
 
-        // Populate the adjacency list with edges
-        for (vector<int> edge : edges) {
+        // Array to track the indegree (number of incoming edges) of each node
+        vector<int> indegree(n, 0);
+
+        // Fill the adjacency list and indegree array based on the edges
+        for (auto& edge : edges) {
             int from = edge[0];
             int to = edge[1];
             adjacencyList[from].push_back(to);
+            indegree[to]++;
         }
 
-        // Perform DFS for each node to find all its ancestors
-        for (int i = 0; i < n; i++) {
-            findAncestorsDFS(i, adjacencyList, i, ancestors);
-        }
-
-        return ancestors;
-    }
-
-private:
-    // Helper method to perform DFS and find ancestors
-    void findAncestorsDFS(int ancestor, vector<vector<int>>& adjacencyList,
-                          int currentNode, vector<vector<int>>& ancestors) {
-        for (int childNode : adjacencyList[currentNode]) {
-            // Check if the ancestor is already added to avoid duplicates
-            if (ancestors[childNode].empty() ||
-                ancestors[childNode].back() != ancestor) {
-                ancestors[childNode].push_back(ancestor);
-                findAncestorsDFS(ancestor, adjacencyList, childNode, ancestors);
+        // Queue to store nodes with zero indegree
+        queue<int> nodesWithZeroIndegree;
+        for (int i = 0; i < indegree.size(); i++) {
+            if (indegree[i] == 0) {
+                nodesWithZeroIndegree.push(i);
             }
         }
+
+        // List to store the topological order of nodes
+        std::vector<int> topologicalOrder;
+        while (!nodesWithZeroIndegree.empty()) {
+            int currentNode = nodesWithZeroIndegree.front();
+            nodesWithZeroIndegree.pop();
+            topologicalOrder.push_back(currentNode);
+
+            // Reduce indegree of neighboring nodes and add them to the queue
+            // if they have no more incoming edges
+            for (int neighbor : adjacencyList[currentNode]) {
+                indegree[neighbor]--;
+                if (indegree[neighbor] == 0) {
+                    nodesWithZeroIndegree.push(neighbor);
+                }
+            }
+        }
+
+        // Initialize the result list and set list for storing ancestors
+        std::vector<std::vector<int>> ancestorsList(n);
+        std::vector<std::unordered_set<int>> ancestorsSetList(n);
+
+        // Fill the set list with ancestors using the topological order
+        for (int node : topologicalOrder) {
+            for (int neighbor : adjacencyList[node]) {
+                // Add immediate parent
+                ancestorsSetList[neighbor].insert(node);
+                // Add all ancestors of the current node
+                ancestorsSetList[neighbor].insert(
+                    ancestorsSetList[node].begin(),
+                    ancestorsSetList[node].end());
+            }
+        }
+
+        // Convert sets to lists and sort them
+        for (int i = 0; i < ancestorsList.size(); i++) {
+            for (int node = 0; node < n; node++) {
+                if (node == i) continue;
+                if (ancestorsSetList[i].find(node) != ancestorsSetList[i].end()) {
+                    ancestorsList[i].push_back(node);
+                }
+            }
+            
+        }
+
+        return ancestorsList;
     }
 };
