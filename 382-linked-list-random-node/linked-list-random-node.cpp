@@ -19,10 +19,10 @@ public:
     int getRandom() {
         int res;
         ListNode* curr = temp;
-        int size = 1;
+       int size = 1;
         while(curr) {
             //choosing probability is 1/size (reservior sampling)
-            if(rand()%size <= 1 / size)
+            if(rand()%size == size-1)
                 res = curr->val;
             curr = curr->next;
             size++;
