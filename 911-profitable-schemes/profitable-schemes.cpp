@@ -17,7 +17,8 @@ public:
         // Iterate over each group (in reverse order)
         for (int i = 0 ; i < group.size(); i++) {
             // Iterate over each number of members
-            for (int j = 0; j <= n; j++) {
+            dp[0][0] = 1;
+            for (int j = 1; j <= n; j++) {
                 // Iterate over each profit value
                 for (int p = 0; p <= minProfit; p++) {
                     int not_taken = dp[j][p]; // Case where the current group is not taken
