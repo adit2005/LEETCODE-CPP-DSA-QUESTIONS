@@ -22,7 +22,7 @@ public:
        int size = 1;
         while(curr) {
             //choosing probability is 1/size (reservior sampling)
-            if(rand()%size == size-1)
+            if(rand()%size == 0)
                 res = curr->val;
             curr = curr->next;
             size++;
