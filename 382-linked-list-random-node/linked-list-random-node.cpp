@@ -10,20 +10,24 @@
  */
 class Solution {
 public:
-    vector<int> arr; //O(N) space
+    ListNode* temp;
     Solution(ListNode* head) {
-        ListNode* temp = head;
-        while(temp) {
-            arr.push_back(temp->val);
-            temp = temp->next;
-        }
+        temp = head;
     }
     
     /** Returns a random node's value. */
     int getRandom() {
-        int n       = arr.size();
-        int r_index = rand()%n;
-        return arr[r_index]; //O(1) access time
+        int res;
+        ListNode* curr = temp;
+        int size = 1;
+        while(curr) {
+            //choosing probability is 1/size (reservior sampling)
+            if(rand()%size <= 1 / size)
+                res = curr->val;
+            curr = curr->next;
+            size++;
+        }
+        return res;
     }
 };
 /**
