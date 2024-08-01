@@ -1,25 +1,54 @@
 class Solution {
 public:
-    int count_oc(string sub, string s){ //pointers approach
-        if(sub.length() == 0) return s.length(); //dummy case when sub = ""
-        int ind = 0;  //current pointer in sub
-        int cntr = 0; //number of times it appears as substring
-        for(int i = 0; i < s.length(); i++) {
-            if(sub[ind] == s[i]){ //if it matches, then increment our index
-                ind++; 
-                if(ind == (int)sub.length()) ind = 0, cntr++; //reset our pointer
-            } 
+    // Number of letters in the alphabet
+    int alphabet = 26;
+
+    // Function to check if 'temp' appears as a subsequence in 's' at least 'k' times
+    bool find(string &s, string &temp, int k) {
+        int j = 0; // Pointer for 'temp'
+        int n = s.length();
+        int count = 0; // Counter for the number of times 'temp' appears in 's'
+
+        for (int i = 0; i < n; i++) {
+            if (s[i] == temp[j]) {
+                j++;
+                // If we have matched the entire 'temp', increment the counter and reset the pointer
+                if (j == temp.size()) {
+                    count++;
+                    j = 0;
+                }
+                // If 'temp' has appeared at least 'k' times, return true
+                if (count == k) {
+                    return true;
+                }
+            }
         }
-        return cntr;
+        // If 'temp' does not appear at least 'k' times, return false
+        return false;
     }
-    string best; //best string we've seen so far
-    void rec(string sub, string s, int k) {
-        if(count_oc(sub, s) < k) return; //if it doesn't work, appending something still won't make it work
-        if(sub.length() >= best.length() && sub > best) best = sub; //we've found something better!
-        for(char c = 'a'; c <= 'z'; c++) rec(sub + c, s, k); //we can try appending and seeing if it works
-    }
+
+    // Main function to find the longest subsequence repeated 'k' times
     string longestSubsequenceRepeatedK(string s, int k) {
-        rec("", s, k);
-        return best;
+        int n = s.length();
+        queue<string> q;
+        q.push(""); // Start with an empty string
+        string ans = ""; // Variable to store the longest subsequence found
+
+        // Breadth-First Search (BFS) using a queue
+        while (!q.empty()) {
+            string curr = q.front();
+            q.pop();
+
+            // Try appending each character from 'a' to 'z' to the current string 'curr'
+            for (int i = 0; i < alphabet; i++) {
+                string temp = curr + char('a' + i);
+                // If the new string 'temp' appears at least 'k' times in 's'
+                if (find(s, temp, k)) {
+                    ans = temp; // Update the answer with the new valid subsequence
+                    q.push(temp); // Push the new string into the queue to explore further
+                }
+            }
+        }
+        return ans; // Return the longest valid subsequence found
     }
 };
