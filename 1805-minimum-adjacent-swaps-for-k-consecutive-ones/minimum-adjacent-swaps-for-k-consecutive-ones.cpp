@@ -1,8 +1,3 @@
-#include <vector>
-#include <algorithm>
-#include <climits>
-using namespace std;
-
 class Solution {
 public:
     int minMoves(vector<int>& nums, int k) {
@@ -37,6 +32,6 @@ public:
         // Adjust the result by subtracting the minimum number of moves
         result -= (long long)(k / 2) * ((k + 1) / 2);
         
-        return static_cast<int>(result); // Return result as int
+        return result; // Return result as int
     }
 };
