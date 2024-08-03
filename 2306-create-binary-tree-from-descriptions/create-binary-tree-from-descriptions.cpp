@@ -12,52 +12,56 @@
 class Solution {
 public:
     TreeNode* createBinaryTree(vector<vector<int>>& descriptions) {
-        // Sets to track unique children and parents
-        unordered_set<int> children, parents;
-        // Map to store parent to children relationships
-        unordered_map<int, vector<pair<int, int>>> parentToChildren;
+        // Step 1: Organize data
+        unordered_map<int, vector<pair<int, bool>>> parentToChildren;
+        unordered_set<int> allNodes;
+        unordered_set<int> children;
 
-        // Build graph from parent to child, and add nodes to HashSets
-        for (auto& d : descriptions) {
-            int parent = d[0], child = d[1], isLeft = d[2];
-            parents.insert(parent);
-            parents.insert(child);
+        for (auto& desc : descriptions) {
+            int parent = desc[0];
+            int child = desc[1];
+            bool isLeft = desc[2];
+
+            parentToChildren[parent].push_back({child, isLeft});
+            allNodes.insert(parent);
+            allNodes.insert(child);
             children.insert(child);
-            parentToChildren[parent].emplace_back(child, isLeft);
         }
 
-        // Find the root node by checking which node is in parents but not in
-        // children
-        for (auto it = parents.begin(); it != parents.end();) {
-            if (children.find(*it) != children.end()) {
-                it = parents.erase(it);
-            } else {
-                ++it;
+        // Step 2: Find the root
+        int rootVal = 0;
+        for (int node : allNodes) {
+            if (!children.contains(node)) {
+                rootVal = node;
+                break;
             }
         }
-        TreeNode* root = new TreeNode(*parents.begin());
 
-        // Starting from root, use BFS to construct binary tree
-        queue<TreeNode*> queue;
-        queue.push(root);
+        // Step 3 & 4: Build the tree using DFS
+        return dfs(parentToChildren, rootVal);
+    }
 
-        while (!queue.empty()) {
-            TreeNode* parent = queue.front();
-            queue.pop();
-            // Iterate over children of current parent
-            for (auto& childInfo : parentToChildren[parent->val]) {
-                int childValue = childInfo.first, isLeft = childInfo.second;
-                TreeNode* child = new TreeNode(childValue);
-                queue.push(child);
-                // Attach child node to its parent based on isLeft flag
-                if (isLeft == 1) {
-                    parent->left = child;
+private:
+    TreeNode* dfs(unordered_map<int, vector<pair<int, bool>>>& parentToChildren,
+                  int val) {
+        // Create new TreeNode for current value
+        TreeNode* node = new TreeNode(val);
+
+        // If current node has children, recursively build them
+        if (parentToChildren.find(val) != parentToChildren.end()) {
+            for (auto& child_info : parentToChildren[val]) {
+                int child = child_info.first;
+                bool isLeft = child_info.second;
+
+                // Attach child node based on isLeft flag
+                if (isLeft) {
+                    node->left = dfs(parentToChildren, child);
                 } else {
-                    parent->right = child;
+                    node->right = dfs(parentToChildren, child);
                 }
             }
         }
 
-        return root;
+        return node;
     }
 };
