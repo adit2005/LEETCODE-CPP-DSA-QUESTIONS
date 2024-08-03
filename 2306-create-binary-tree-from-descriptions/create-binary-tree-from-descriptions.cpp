@@ -9,59 +9,54 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
+
 class Solution {
 public:
     TreeNode* createBinaryTree(vector<vector<int>>& descriptions) {
-        // Step 1: Organize data
-        unordered_map<int, vector<pair<int, bool>>> parentToChildren;
-        unordered_set<int> allNodes;
+        // Maps values to TreeNode pointers
+        unordered_map<int, TreeNode*> nodeMap;
+        // Stores values which are children in the descriptions
         unordered_set<int> children;
 
-        for (auto& desc : descriptions) {
-            int parent = desc[0];
-            int child = desc[1];
-            bool isLeft = desc[2];
+        // Iterate through descriptions to create nodes and set up tree
+        // structure
+        for (const auto& description : descriptions) {
+            // Extract parent value, child value, and whether it is a
+            // left child (1) or right child (0)
+            int parentValue = description[0];
+            int childValue = description[1];
+            bool isLeft = description[2];
 
-            parentToChildren[parent].push_back({child, isLeft});
-            allNodes.insert(parent);
-            allNodes.insert(child);
-            children.insert(child);
+            // Create parent and child nodes if not already created
+            if (nodeMap.count(parentValue) == 0) {
+                nodeMap[parentValue] = new TreeNode(parentValue);
+            }
+            if (nodeMap.count(childValue) == 0) {
+                nodeMap[childValue] = new TreeNode(childValue);
+            }
+
+            // Attach child node to parent's left or right branch
+            if (isLeft) {
+                nodeMap[parentValue]->left = nodeMap[childValue];
+            } else {
+                nodeMap[parentValue]->right = nodeMap[childValue];
+            }
+
+            // Mark child as a child in the set
+            children.insert(childValue);
         }
 
-        // Step 2: Find the root
-        int rootVal = 0;
-        for (int node : allNodes) {
-            if (!children.contains(node)) {
-                rootVal = node;
-                break;
+        // Find and return the root node
+        for (auto& entry : nodeMap) {
+            auto& value = entry.first;
+            auto& node = entry.second;
+            // Root node found
+            if (children.find(value) == children.end()) {
+                return node;
             }
         }
 
-        // Step 3 & 4: Build the tree using DFS
-        return dfs(parentToChildren, rootVal);
-    }
-
-private:
-    TreeNode* dfs(unordered_map<int, vector<pair<int, bool>>>& parentToChildren,
-                  int val) {
-        // Create new TreeNode for current value
-        TreeNode* node = new TreeNode(val);
-
-        // If current node has children, recursively build them
-        if (parentToChildren.find(val) != parentToChildren.end()) {
-            for (auto& child_info : parentToChildren[val]) {
-                int child = child_info.first;
-                bool isLeft = child_info.second;
-
-                // Attach child node based on isLeft flag
-                if (isLeft) {
-                    node->left = dfs(parentToChildren, child);
-                } else {
-                    node->right = dfs(parentToChildren, child);
-                }
-            }
-        }
-
-        return node;
+        // Should not occur according to problem statement
+        return nullptr;
     }
 };
