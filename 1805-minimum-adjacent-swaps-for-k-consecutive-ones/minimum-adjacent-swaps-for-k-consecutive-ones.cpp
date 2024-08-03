@@ -1,40 +1,42 @@
+#include <vector>
+#include <algorithm>
+#include <climits>
+using namespace std;
+
 class Solution {
 public:
     int minMoves(vector<int>& nums, int k) {
-        vector<int> positionOfOnes; // Holds the positions of '1's in the input vector.
-      
-        // Extracting the positions of '1's from the input vector.
+        vector<int> indices; // To store indices of all 1s
+        
+        // Collect indices of all 1s
         for (int i = 0; i < nums.size(); ++i) {
             if (nums[i] == 1) {
-                positionOfOnes.push_back(i);
+                indices.push_back(i);
             }
         }
-      
-        int totalOnes = positionOfOnes.size(); // The total number of '1's found.
-        vector<long> prefixSum(totalOnes + 1, 0); // Prefix sum array for storing cumulative positions sum.
-
-        // Computing the prefix sums of the positions of ones.
-        for (int i = 0; i < totalOnes; ++i) {
-            prefixSum[i + 1] = prefixSum[i] + positionOfOnes[i];
+        
+        int n = indices.size();
+        if (k > n) return -1; // If there are fewer than k 1s, it's not possible
+        
+        vector<long long> prefixSum(n + 1, 0); // Prefix sum array
+        
+        // Compute prefix sums
+        for (int i = 0; i < n; ++i) {
+            prefixSum[i + 1] = prefixSum[i] + indices[i];
         }
-      
-        long minOperations = LONG_MAX; // Initialize minimum operations to a large value.
-        int leftGroupSize = (k + 1) / 2; // Number of elements to the left of mid element in the current window.
-        int rightGroupSize = k - leftGroupSize; // Number of elements to the right
-      
-        // Sliding window over the array of ones to find minimum moves.
-        for (int i = leftGroupSize - 1; i < totalOnes - rightGroupSize; ++i) {
-            int current = positionOfOnes[i]; // The current position we are focusing on.
-            long sumLeft = prefixSum[i + 1] - prefixSum[i + 1 - leftGroupSize];
-            long sumRight = prefixSum[i + 1 + rightGroupSize] - prefixSum[i + 1];
-          
-            long operationsForLeft = ((current + current - leftGroupSize + 1L) * leftGroupSize / 2) - sumLeft;
-            long operationsForRight = sumRight - ((current + 1L + current + rightGroupSize) * rightGroupSize / 2);
-          
-            // Update the minimum operations if the current moves are less.
-            minOperations = min(minOperations, operationsForLeft + operationsForRight);
+        
+        long long result = LLONG_MAX; // Initialize result to maximum possible value
+        
+        for (int i = 0; i <= n - k; ++i) {
+            int mid = i + k / 2;
+            long long leftCost = (long long)indices[mid] * (mid - i) - (prefixSum[mid] - prefixSum[i]);
+            long long rightCost = (prefixSum[i + k] - prefixSum[mid + 1]) - (long long)indices[mid] * (i + k - mid - 1);
+            result = min(result, leftCost + rightCost);
         }
-      
-        return minOperations; // Return the minimum number of operations found.
+        
+        // Adjust the result by subtracting the minimum number of moves
+        result -= (long long)(k / 2) * ((k + 1) / 2);
+        
+        return static_cast<int>(result); // Return result as int
     }
 };
