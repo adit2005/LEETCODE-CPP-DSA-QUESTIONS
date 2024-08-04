@@ -1,42 +1,62 @@
 class Solution {
 public:
-    // Helper function to perform DFS and find the smallest character in the connected component
-    char dfs(unordered_map<char, vector<char>>& mapping, char input, unordered_set<char>& visited) {
-        if (visited.count(input) > 0) {
-            return input;  // Return if the character has already been visited
+    // Function for finding the representative (root) of a set
+    int find(vector<int>& parent, int x) {
+        // Base case: if x is its own parent, return x
+        if (parent[x] == x) {
+            return x;
         }
-        visited.insert(input);  // Mark the character as visited
-        char ret = input;  // Initialize the smallest character with the input character
-        for (const auto ch : mapping[input]) {
-            ret = min(ret, dfs(mapping, ch, visited));  // Recursively find the smallest character
-        }
-        return ret;
+        
+        // Recursively find the root and perform path compression
+        parent[x] = find(parent, parent[x]);
+        return parent[x];
     }
-
-public:
-    string smallestEquivalentString(string A, string B, string S) {
-        unordered_map<char, vector<char>> mapping;  // Adjacency list for character mappings
-        // Build the graph based on pairs in A and B
-        for (int i = 0; i < A.size(); ++i) {
-            mapping[A[i]].push_back(B[i]);
-            mapping[B[i]].push_back(A[i]);
+    
+    // Function for union of two elements
+    void unionn(int x, int y, vector<int>& parent) {
+        // Find the representatives (roots) of both x and y
+        int rep_x = find(parent, x);
+        int rep_y = find(parent, y);
+        
+        // If both elements are already in the same set, do nothing
+        if (rep_x == rep_y) {
+            return;
         }
-        string ret;  // Resultant string
-        unordered_map<char, char> memo;  // Memoization for characters to their smallest equivalent
-        // Process each character in S
-        for (const auto s : S) {
-            if (memo.count(s) > 0) {
-                ret += memo[s];  // Use memoized result if available
-                continue;
-            }
-            unordered_set<char> visited;  // Set to keep track of visited characters
-            const auto min_char = dfs(mapping, s, visited);  // Find the smallest equivalent character
-            // Memoize the smallest character for all visited characters
-            for (const auto ch : visited) {
-                memo[ch] = min_char;
-            }
-            ret += min_char;  // Append the smallest character to the result
+        
+        // Always make the lexicographically smaller element the representative
+        if (rep_x < rep_y) {
+            parent[rep_y] = rep_x;
+        } else {
+            parent[rep_x] = rep_y;
         }
-        return ret;  // Return the resultant string
+    }
+    
+    string smallestEquivalentString(string s1, string s2, string baseStr) {
+        int n = s1.size();
+        
+        // There are only 26 characters from 'a' to 'z'
+        // Declare a parent array to represent each character
+        vector<int> parent(26);
+        
+        // Initialize each character to be its own parent
+        for (int i = 0; i < 26; i++) {
+            parent[i] = i;
+        }
+        
+        // Union the characters from s1 and s2
+        for (int i = 0; i < n; i++) {
+            int x = s1[i] - 'a';
+            int y = s2[i] - 'a';
+            unionn(x, y, parent);
+        }
+        
+        // Form the lexicographically smallest result string
+        string res = "";
+        for (int i = 0; i < baseStr.size(); i++) {
+            int rep = find(parent, baseStr[i] - 'a');
+            res += 'a' + rep;
+        }
+        
+        return res;
     }
 };
