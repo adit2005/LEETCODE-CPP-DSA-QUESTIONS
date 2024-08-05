@@ -1,38 +1,32 @@
 class Solution {
 public:
-    int m, n;
-    
-    int t[1001][1001];
-    
-    int solve(string &s1, string &s2, int i, int j) {
-        if(i >= m && j >= n)
-            return 0;
+    int minimumDeleteSum(string s1, string s2) {
+        int m = s1.size();
+        int n = s2.size();
         
-        if(t[i][j] != -1)
-            return t[i][j];
+        // Create a DP table
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
         
-        if(i >= m) {
-            return t[i][j] = s2[j] + solve(s1, s2, i, j+1);
-        } else if(j >= n) {
-            return t[i][j] = s1[i] + solve(s1, s2, i+1, j);
+        // Initialize the last row and last column
+        for (int i = m - 1; i >= 0; --i) {
+            dp[i][n] = dp[i + 1][n] + s1[i];
         }
         
-        if(s1[i] == s2[j])
-            return t[i][j] = solve(s1, s2, i+1, j+1);
+        for (int j = n - 1; j >= 0; --j) {
+            dp[m][j] = dp[m][j + 1] + s2[j];
+        }
         
-        int take_s1_i = s1[i] + solve(s1, s2, i+1, j);
-        int take_s2_j = s2[j] + solve(s1, s2, i, j+1);
+        // Fill the DP table
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = n - 1; j >= 0; --j) {
+                if (s1[i] == s2[j]) {
+                    dp[i][j] = dp[i + 1][j + 1];
+                } else {
+                    dp[i][j] = min(s1[i] + dp[i + 1][j], s2[j] + dp[i][j + 1]);
+                }
+            }
+        }
         
-        return t[i][j] = min(take_s1_i, take_s2_j);
-    }
-    
-    int minimumDeleteSum(string s1, string s2) {
-        m = s1.length();
-        n = s2.length();
-        
-        memset(t, -1, sizeof(t));
-        
-        return solve(s1, s2, 0, 0);
+        return dp[0][0];
     }
 };
-
