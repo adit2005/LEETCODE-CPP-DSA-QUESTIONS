@@ -1,31 +1,52 @@
 class Solution {
 public:
-    vector<vector<int>> spiralMatrixIII(int rows, int cols, int rStart,
-                                        int cStart) {
-        // Store all possible directions in an array.
-        vector<vector<int>> dir{{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-        vector<vector<int>> traversed;
-
-        // Initial step size is 1, value of d represents the current direction.
-        for (int step = 1, direction = 0; traversed.size() < rows * cols;) {
-            // direction = 0 -> East, direction = 1 -> South
-            // direction = 2 -> West, direction = 3 -> North
-            for (int i = 0; i < 2; ++i) {
-                for (int j = 0; j < step; ++j) {
-                    // Validate the current position
-                    if (rStart >= 0 && rStart < rows && cStart >= 0 &&
-                        cStart < cols) {
-                        traversed.push_back({rStart, cStart});
-                    }
-                    // Make changes to the current position.
-                    rStart += dir[direction][0];
-                    cStart += dir[direction][1];
+   
+    vector<vector<int>> spiralMatrixIII(int rows, int cols, int x, int y) {
+        vector<vector<int>> ans;
+        int total = rows * cols, count = 0, width = 1, height = 1;
+        
+        while (count < total) {
+            // Move right
+            for (int i = 0; i < width; ++i) {
+                if (x >= 0 && x < rows && y >= 0 && y < cols) {
+                    ans.push_back({x, y});
+                    ++count;
                 }
-
-                direction = (direction + 1) % 4;
+                ++y;
             }
-            ++step;
+            ++width;
+            
+            // Move down
+            for (int i = 0; i < height; ++i) {
+                if (x >= 0 && x < rows && y >= 0 && y < cols) {
+                    ans.push_back({x, y});
+                    ++count;
+                }
+                ++x;
+            }
+            ++height;
+            
+            // Move left
+            for (int i = 0; i < width; ++i) {
+                if (x >= 0 && x < rows && y >= 0 && y < cols) {
+                    ans.push_back({x, y});
+                    ++count;
+                }
+                --y;
+            }
+            ++width;
+            
+            // Move up
+            for (int i = 0; i < height; ++i) {
+                if (x >= 0 && x < rows && y >= 0 && y < cols) {
+                    ans.push_back({x, y});
+                    ++count;
+                }
+                --x;
+            }
+            ++height;
         }
-        return traversed;
+        
+        return ans;
     }
 };
