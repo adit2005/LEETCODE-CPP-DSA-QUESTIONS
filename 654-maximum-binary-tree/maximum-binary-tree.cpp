@@ -9,26 +9,23 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
+
 class Solution {
 public:
-    TreeNode* build(int lo, int hi, vector<int>& nums) {
-        if(lo > hi) return nullptr;
+    TreeNode* constructMaximumBinaryTree(vector<int>& nums) {
+        stack<TreeNode*> st;
 
-        int maxEl = nums[lo], idx = lo;
-        for(int i = lo; i <= hi; i++) {
-            if(maxEl < nums[i]) {
-                idx = i;
-                maxEl = nums[i];
+        for(int i = 0; i < nums.size(); i++) {
+            TreeNode* node = new TreeNode(nums[i]);
+            while(!st.empty() && st.top() -> val < nums[i]) {
+                node -> left = st.top();
+                st.pop();
             }
+            if(!st.empty()) st.top() -> right = node;
+            st.push(node);
         }
 
-        TreeNode* node = new TreeNode(maxEl);
-        node -> left = build(lo, idx - 1, nums);
-        node -> right = build(idx + 1, hi, nums);
-
-        return node;
-    }
-    TreeNode* constructMaximumBinaryTree(vector<int>& nums) {
-        return build(0, nums.size() - 1, nums);
+        while(st.size() != 1) st.pop();
+        return st.top();
     }
 };
