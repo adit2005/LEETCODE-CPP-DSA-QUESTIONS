@@ -1,43 +1,32 @@
 class Solution {
 public:
     long long maxPoints(vector<vector<int>>& points) {
-        int rows = points.size(), cols = points[0].size();
-        vector<long long> previousRow(cols);
+        int cols = points[0].size();
+        vector<long long> currentRow(cols), previousRow(cols);
 
-        // Initialize the first row
-        for (int col = 0; col < cols; ++col) {
-            previousRow[col] = points[0][col];
-        }
+        for (auto& row : points) {
+            // runningMax holds the maximum value generated in the previous
+            // iteration of each loop
+            long long runningMax = 0;
 
-        // Process each row
-        for (int row = 0; row < rows - 1; ++row) {
-            vector<long long> leftMax(cols);
-            vector<long long> rightMax(cols);
-            vector<long long> currentRow(cols);
-
-            // Calculate left-to-right maximum
-            leftMax[0] = previousRow[0];
-            for (int col = 1; col < cols; ++col) {
-                leftMax[col] = max(leftMax[col - 1] - 1, previousRow[col]);
-            }
-
-            // Calculate right-to-left maximum
-            rightMax[cols - 1] = previousRow[cols - 1];
-            for (int col = cols - 2; col >= 0; --col) {
-                rightMax[col] = max(rightMax[col + 1] - 1, previousRow[col]);
-            }
-
-            // Calculate the current row's maximum points
+            // Left to right pass
             for (int col = 0; col < cols; ++col) {
-                currentRow[col] =
-                    points[row + 1][col] + max(leftMax[col], rightMax[col]);
+                runningMax = max(runningMax - 1, previousRow[col]);
+                currentRow[col] = runningMax;
             }
 
-            // Update previousRow for the next iteration
+            runningMax = 0;
+            // Right to left pass
+            for (int col = cols - 1; col >= 0; --col) {
+                runningMax = max(runningMax - 1, previousRow[col]);
+                currentRow[col] = max(currentRow[col], runningMax) + row[col];
+            }
+
+            // Update previousRow for next iteration
             previousRow = currentRow;
         }
 
-        // Find the maximum value in the last processed row
+        // Find maximum points in the last row
         long long maxPoints = 0;
         for (int col = 0; col < cols; ++col) {
             maxPoints = max(maxPoints, previousRow[col]);
