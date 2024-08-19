@@ -1,26 +1,20 @@
 class Solution {
 public:
-    int n;
-    vector<vector<int>> memo;
-
     int minSteps(int n) {
-        if (n == 1) return 0;
-        this->n = n;
+        vector<int> dp(n + 1, 1000);
 
-        memo = vector<vector<int>>(n + 1, vector<int>(n / 2 + 1, 0));
-        return 1 + minStepsHelper(1, 1);
-    }
+        // Base case
+        dp[1] = 0;
+        for (int i = 2; i <= n; i++) {
+            for (int j = 1; j <= i / 2; j++) {
+                // Copy All and Paste (i-j) / j times
+                // for all valid j's
+                if (i % j == 0) {
+                    dp[i] = min(dp[i], dp[j] + i / j);
+                }
+            }
+        }
 
-    int minStepsHelper(int currLen, int pasteLen) {
-        if (currLen == n) return 0;
-        if (currLen > n) return 1000;
-
-        // return result if it has been calculated already
-        if (memo[currLen][pasteLen] != 0) return memo[currLen][pasteLen];
-
-        int opt1 = 1 + minStepsHelper(currLen + pasteLen, pasteLen);
-        int opt2 = 2 + minStepsHelper(currLen * 2, currLen);
-        memo[currLen][pasteLen] = min(opt1, opt2);
-        return memo[currLen][pasteLen];
+        return dp[n];
     }
 };
