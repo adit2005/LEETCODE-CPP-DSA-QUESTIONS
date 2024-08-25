@@ -1,35 +1,36 @@
 class Solution {
 public:
     int minTaps(int n, vector<int>& ranges) {
-        vector<int> startEnd(n+1, 0);
+        vector<int> t(n+1, n+2);
         
-        for(int i = 0; i<ranges.size(); i++) {
-            
-            int start = max(0, i - ranges[i]);
-            int end   = min(n, i + ranges[i]);
-            
-            startEnd[start] = max(startEnd[start], end);
-            
-        }
+        //t[i] = minimum taps needed to cover 0 to ith of Garden
+        t[0] = 0; //I need 0 tap to cover 0 to 0
         
-        int taps     = 0;
-        int currEnd  = 0;
-        int maxEnd   = 0;
-        
+        //Why start from i = 0
+        //Because value at ranges[0] also impacts the range {i-ranges[i], i+ranges[i]}
+        //We will miss that impact if we skip i = 0
         for(int i = 0; i<n+1; i++) {
             
-            if(i > maxEnd)
-                return -1;
+            int l = max(0, i-ranges[i]);
+            int r = min(n, i+ranges[i]);
             
-            if(i > currEnd) {
-                taps++;
-                currEnd = maxEnd;
-            }
-            
-            maxEnd = max(maxEnd, startEnd[i]);
+            /*
+                0 to l is watered
+                We now need to find minimum taps to cover from (l+1) to r
+            */
+            for(int j = l+1; j<=r; j++)
+                
+                /*
+                    Check if this range from(left+1..right) can
+                    be watered using less number of taps than previous
+                */
+                
+                t[j] = min(t[j], t[l]+1);
             
         }
         
-        return taps;    
+        //if min taps needed to water ground is greater than (n+1) we return -1
+        //Because we only had (n+1) taps
+        return t[n] > n+1 ? -1 : t[n];
     }
 };
