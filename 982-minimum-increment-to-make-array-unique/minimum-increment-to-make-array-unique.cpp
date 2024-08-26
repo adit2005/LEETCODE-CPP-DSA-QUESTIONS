@@ -1,20 +1,35 @@
 class Solution {
 public:
     int minIncrementForUnique(vector<int>& nums) {
+        int n = nums.size();
+        int max_val = 0;
         int minIncrements = 0;
 
-        sort(nums.begin(), nums.end());
+        // Find maximum value in nums using a loop
+        for (int val : nums) {
+            max_val = max(max_val, val);
+        }
 
-        for (int i = 1; i < nums.size(); i++) {
-            // Ensure each element is greater than its previous
-            if (nums[i] <= nums[i - 1]) {
-                // Add the required increment to minIncrements
-                int increment = nums[i - 1] + 1 - nums[i];
-                minIncrements += increment;
+        // Create a frequencyCount vector to store the frequency of each value
+        // in nums
+        vector<int> frequencyCount(n + max_val + 1, 0);
 
-                // Set the element to be greater than its previous
-                nums[i] = nums[i - 1] + 1;
-            }
+        // Populate frequencyCount vector with the frequency of each value in
+        // nums
+        for (int val : nums) {
+            frequencyCount[val]++;
+        }
+
+        // Iterate over the frequencyCount vector to make all values unique
+        for (int i = 0; i < frequencyCount.size(); i++) {
+            if (frequencyCount[i] <= 1) continue;
+
+            // Determine excess occurrences, carry them over to the next value,
+            // ensure single occurrence for current value, and update
+            // minIncrements.
+            int duplicates = frequencyCount[i] - 1;
+            frequencyCount[i + 1] += duplicates;
+            minIncrements += duplicates;
         }
 
         return minIncrements;
