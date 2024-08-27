@@ -1,62 +1,50 @@
 class Solution {
 public:
     int findTheCity(int n, vector<vector<int>>& edges, int distanceThreshold) {
-        unordered_map<int , vector<pair<int,int> > >adj;
-
-        for(auto edge: edges){
-            int x = edge[0];
-            int y= edge[1];
-            int cost = edge[2];
-
-            adj[x].push_back(make_pair(y,cost));
-            adj[y].push_back(make_pair(x,cost));
+        vector<pair<int,int>> adj[n];
+        for(auto it:edges)
+        {
+            adj[it[0]].push_back({it[1],it[2]});
+            adj[it[1]].push_back({it[0],it[2]});
         }
-
-       int city=-1;
-       int prev=n;
-
-        for(int i=0; i< n ; i++){
-            set<pair<int,int>>st;
-            vector<int>distance(n,1e5);
-
-            st.insert(make_pair(0,i));
-            distance[i]=0;
-
-            while(!st.empty()){
-                auto top = *(st.begin());
-                st.erase(st.begin());
-
-                int cost = top.first;
-                int node =top.second;
-
-                for(auto neigbhours : adj[node]){
-                    if(cost+ neigbhours.second < distance[neigbhours.first]){
-                        auto record = st.find(make_pair(distance[neigbhours.first],neigbhours.first));
-
-                        if(record!=st.end()){
-                            st.erase(record);
-                        }
-                        distance[neigbhours.first]= cost + neigbhours.second;
-                        st.insert({distance[neigbhours.first], neigbhours.first});
+        
+        priority_queue<pair<int,int>,vector<pair<int,int>>,greater<pair<int,int>>> pq;
+        
+        int cityno,mincitycount=1e9;
+        
+        for(int i=0;i<n;i++)
+        {
+            vector<int> dist(n,1e9);
+            pq.push({0,i});
+            dist[i]=0;
+            while(!pq.empty())
+            {
+                int distance=pq.top().first;
+                int node=pq.top().second;
+                pq.pop();
+                for(auto it:adj[node])
+                {
+                    int adjNode=it.first;
+                    int adjWeight=it.second;
+                    if(distance + adjWeight < dist[adjNode])
+                    {
+                        dist[adjNode] = distance + adjWeight;
+                        pq.push({dist[adjNode],adjNode});
                     }
                 }
             }
-
-            int ct=0;
-            for(auto a: distance ){
-                if(a<=distanceThreshold){
-                    ct++;
-                }
+            int count=0;
+            for(int j=0;j<n;j++)
+            {
+                if(dist[j]<=distanceThreshold)
+                    count++;
             }
-            if(ct<=prev){
-                prev=ct;
-                city= max(i,city);
-
+            if(count<=mincitycount)
+            {
+                mincitycount=count;
+                cityno = i;
             }
-
         }
-
-        return city;
-
+        return cityno;
     }
 };
