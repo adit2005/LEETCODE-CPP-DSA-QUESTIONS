@@ -8,6 +8,7 @@ class Solution {
         return grid[x][y] == 1;
     }
 
+public:
     // Traverse all cells of island starting at position (x, y) in 'grid2',
     // and check this island is a sub-island in 'grid1'.
     bool isSubIsland(int x, int y, vector<vector<int>>& grid1,
@@ -15,36 +16,44 @@ class Solution {
                      vector<vector<bool>>& visited) {
         int totalRows = grid2.size();
         int totalCols = grid2[0].size();
-        // Traverse on all cells using the depth-first search method.
-        bool isSubIsLand = true;
 
-        // If the current cell is not a land cell in 'grid1', then the current
-        // island can't be a sub-island.
-        if (!isCellLand(x, y, grid1)) {
-            isSubIsLand = false;
-        }
+        int isSubIsland = true;
 
-        // Traverse on all adjacent cells.
-        for (auto& direction : directions) {
-            int nextX = x + direction[0];
-            int nextY = y + direction[1];
-            // If the next cell is inside the 'grid2', is never visited and is a
-            // land cell, then we traverse to the next cell.
-            if (nextX >= 0 && nextY >= 0 && nextX < totalRows &&
-                nextY < totalCols && !visited[nextX][nextY] &&
-                isCellLand(nextX, nextY, grid2)) {
-                // Push the next cell in the recursive stack and mark it as
-                // visited.
-                visited[nextX][nextY] = true;
-                bool nextCellIsPartOfSubIsland =
-                    isSubIsland(nextX, nextY, grid1, grid2, visited);
-                isSubIsLand = isSubIsLand && nextCellIsPartOfSubIsland;
+        queue<pair<int, int>> pendingCells;
+        // Push the starting cell in the queue and mark it as visited.
+        pendingCells.push({x, y});
+        visited[x][y] = true;
+
+        // Traverse on all cells using the breadth-first search method.
+        while (!pendingCells.empty()) {
+            int currX = pendingCells.front().first;
+            int currY = pendingCells.front().second;
+            pendingCells.pop();
+
+            // If the current position cell is not a land cell in 'grid1',
+            // then the current island can't be a sub-island.
+            if (!isCellLand(currX, currY, grid1)) {
+                isSubIsland = false;
+            }
+
+            for (auto& direction : directions) {
+                int nextX = currX + direction[0];
+                int nextY = currY + direction[1];
+                // If the next cell is inside 'grid2', is never visited and
+                // is a land cell, then we traverse to the next cell.
+                if (nextX >= 0 && nextY >= 0 && nextX < totalRows &&
+                    nextY < totalCols && !visited[nextX][nextY] &&
+                    isCellLand(nextX, nextY, grid2)) {
+                    // Push the next cell in the queue and mark it as visited.
+                    pendingCells.push({nextX, nextY});
+                    visited[nextX][nextY] = true;
+                }
             }
         }
-        return isSubIsLand;
+
+        return isSubIsland;
     }
 
-public:
     int countSubIslands(vector<vector<int>>& grid1,
                         vector<vector<int>>& grid2) {
         int totalRows = grid2.size();
@@ -57,14 +66,12 @@ public:
         for (int x = 0; x < totalRows; ++x) {
             for (int y = 0; y < totalCols; ++y) {
                 // If cell at the position (x, y) in the 'grid2' is not visited,
-                // is a land cell in 'grid2',
-                // and the island starting from this cell is a sub-island in
-                // 'grid1', then we increment the count of sub-islands.
-                if (!visited[x][y] && isCellLand(x, y, grid2)) {
-                    visited[x][y] = true;
-                    if (isSubIsland(x, y, grid1, grid2, visited)) {
-                        subIslandCounts += 1;
-                    }
+                // is a land cell in 'grid2', and the island
+                // starting from this cell is a sub-island in 'grid1', then we
+                // increment the count of sub-islands.
+                if (!visited[x][y] && isCellLand(x, y, grid2) &&
+                    isSubIsland(x, y, grid1, grid2, visited)) {
+                    subIslandCounts += 1;
                 }
             }
         }
