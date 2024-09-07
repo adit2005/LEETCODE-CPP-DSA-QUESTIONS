@@ -24,22 +24,64 @@ class Solution {
 public:
     bool isSubPath(ListNode* head, TreeNode* root) {
         if (!root) return false;
-        return checkPath(root, head);
+
+        // Initialize a stack for DFS on the tree
+        stack<TreeNode*> nodes;
+        nodes.push(root);
+
+        // Perform DFS
+        while (!nodes.empty()) {
+            TreeNode* node = nodes.top();
+            nodes.pop();
+
+            // Check if the current node's path matches the linked list
+            if (isMatch(node, head)) {
+                return true;
+            }
+
+            // Push left and right children onto the stack
+            if (node->left) {
+                nodes.push(node->left);
+            }
+            if (node->right) {
+                nodes.push(node->right);
+            }
+        }
+
+        return false;
     }
 
 private:
-    bool checkPath(TreeNode* node, ListNode* head) {
-        if (!node) return false;
-        if (dfs(node, head)) return true;  // If a matching path is found
-        // Recursively check left and right subtrees
-        return checkPath(node->left, head) || checkPath(node->right, head);
-    }
+    bool isMatch(TreeNode* node, ListNode* lst) {
+        stack<pair<TreeNode*, ListNode*>> s;
+        s.push({node, lst});
 
-    bool dfs(TreeNode* node, ListNode* head) {
-        if (!head) return true;  // All nodes in the list matched
-        if (!node)
-            return false;  // Reached end of tree without matching all nodes
-        if (node->val != head->val) return false;  // Value mismatch
-        return dfs(node->left, head->next) || dfs(node->right, head->next);
+        while (!s.empty()) {
+            auto [currentNode, currentList] = s.top();
+            s.pop();
+
+            while (currentNode && currentList) {
+                if (currentNode->val != currentList->val) {
+                    break;
+                }
+                currentList = currentList->next;
+
+                if (currentList) {
+                    if (currentNode->left) {
+                        s.push({currentNode->left, currentList});
+                    }
+                    if (currentNode->right) {
+                        s.push({currentNode->right, currentList});
+                    }
+                    break;
+                }
+            }
+
+            if (!currentList) {
+                return true;
+            }
+        }
+
+        return false;
     }
 };
