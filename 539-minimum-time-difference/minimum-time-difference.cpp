@@ -20,6 +20,6 @@ public:
         }
 
         // Consider difference between last and first element
-        return min(ans, abs(24 * 60 - minutes[minutes.size() - 1] + minutes[0]));
+        return min(ans, 24 * 60 - minutes[minutes.size() - 1] + minutes[0]);
     }
 };
