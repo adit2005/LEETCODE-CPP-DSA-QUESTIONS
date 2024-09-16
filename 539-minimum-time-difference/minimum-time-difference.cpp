@@ -1,25 +1,34 @@
 class Solution {
 public:
     int findMinDifference(vector<string>& timePoints) {
-        // Convert input to minutes
-        vector<int> minutes(timePoints.size());
-        for (int i = 0; i < timePoints.size(); i++) {
-            string time = timePoints[i];
+        // create buckets array for the times converted to minutes
+        vector<bool> minutes(24 * 60, false);
+        for (string time : timePoints) {
             int h = stoi(time.substr(0, 2));
             int m = stoi(time.substr(3));
-            minutes[i] = h * 60 + m;
+            int min = h * 60 + m;
+            if (minutes[min]) return 0;
+            minutes[min] = true;
         }
-
-        // Sort times in ascending order
-        sort(minutes.begin(), minutes.end());
-
-        // Find minimum difference across adjacent elements
+        int prevIndex = INT_MAX;
+        int firstIndex = INT_MAX;
+        int lastIndex = INT_MAX;
         int ans = INT_MAX;
-        for (int i = 0; i < minutes.size() - 1; i++) {
-            ans = min(ans, minutes[i + 1] - minutes[i]);
+
+        // find differences between adjacent elements in sorted array
+        for (int i = 0; i < 24 * 60; i++) {
+            if (minutes[i]) {
+                if (prevIndex != INT_MAX) {
+                    ans = min(ans, i - prevIndex);
+                }
+                prevIndex = i;
+                if (firstIndex == INT_MAX) {
+                    firstIndex = i;
+                }
+                lastIndex = i;
+            }
         }
 
-        // Consider difference between last and first element
-        return min(ans, 24 * 60 - minutes[minutes.size() - 1] + minutes[0]);
+        return min(ans, 24 * 60 - lastIndex + firstIndex);
     }
 };
