@@ -3,7 +3,7 @@ public:
     
    // Static comparison function for sorting strings
    static bool comp(string &s1 , string &s2){
-        return (s1 + s2) >= (s2 + s1);
+        return (s1 + s2) > (s2 + s1);
    }
    
    // Function to find the largest number from a vector of integers
