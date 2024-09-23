@@ -1,77 +1,54 @@
 class Solution {
 public:
+    // Function to find the maximum length of a non-decreasing array
     int findMaximumLength(vector<int>& nums) {
-        int n = nums.size();
         
-        // Step 1: Create prefix sum array `pre`
-        // `pre[i]` stores the sum of elements from nums[0] to nums[i-1].
-        vector<long long> pre(n + 1);
+        int n = nums.size();  // Get the size of the input array
+        vector<long long> v(n+1, 0);  // Prefix sum array `v`, initialized to 0
+        vector<int> dp(n+1, 0);  // DP array `dp`, where `dp[i]` stores the maximum length up to index `i`
+        
+        // Step 1: Build prefix sum array `v`
+        for(int i = 1; i <= n; i++)
+            v[i] = v[i-1] + nums[i-1];  // Calculate the cumulative sum of the elements in nums
+        
+        vector<vector<long long>> sk;  // Stack `sk` to store pairs of (prefix_sum_value, index)
+        sk.push_back({0, 0});  // Initialize with {0, 0} to represent the base case (no elements considered yet)
+        
+        // Step 2: Iterate through the array and calculate the maximum length of non-decreasing subarrays
         for (int i = 1; i <= n; i++) {
-            pre[i] = pre[i - 1] + nums[i - 1];
-        }
-        
-        // Step 2: Initialize a dp array where `dp[i]` is a pair.
-        // The first element of `dp[i]` stores the max length of valid subarrays up to index i.
-        // The second element of `dp[i]` stores the minimum sum associated with the last valid subarray of that length.
-        vector<pair<int, long long>> dp(n + 1);
-        for (int i = 0; i <= n; i++) {
-            dp[i] = {0, 1e18};  // Initially, all subarrays have length 0 and sum as infinity.
-        }
-        
-        dp[0] = {0, 0};  // Base case: no elements, so length is 0 and sum is 0.
-        
-        // Step 3: Iterate through the array and build up the dp table.
-        for (int i = 1; i <= n; i++) {
-            // Get the sum from dp[i-1].second (this represents the sum of the last valid subarray up to i-1)
-            long long prevSum = dp[i-1].second;
+            int low = 0, high = sk.size() - 1;  // Binary search boundaries
+            int p = 0;  // `p` will store the best index found in the binary search
             
-            // Calculate the "needed" sum for the next subarray.
-            // This is the sum of all elements up to i-1 plus the sum of the last valid subarray.
-            long long needed = pre[i-1] + prevSum;
-
-            // Step 4: Binary search to find the smallest index where the prefix sum
-            // is greater than or equal to the "needed" sum.
-            int low = i, high = n, where = -1;
+            // Binary search to find the largest `p` such that `sk[p][0] <= v[i]`
             while (low <= high) {
-                int mid = (low + high) / 2;
+                int mid = low + (high - low) / 2;
                 
-                // If the prefix sum at `mid` is greater than or equal to the needed sum, 
-                // record `mid` and try for a smaller index by adjusting `high`.
-                if (pre[mid] >= needed) {
-                    where = mid;
-                    high = mid - 1;
+                // Check if the prefix sum at `mid` is less than or equal to `v[i]`
+                if (sk[mid][0] <= v[i]) {
+                    p = max(p, mid);  // Update `p` with the valid index
+                    low = mid + 1;  // Search in the right half
                 } else {
-                    low = mid + 1;
+                    high = mid - 1;  // Search in the left half
                 }
             }
             
-            // Step 5: If we find such a valid `where`, we update dp[where] with the new values.
-            if (where != -1) {
-                pair<int, long long> p = {dp[i-1].first + 1, pre[where] - pre[i-1]};  // Create the new pair.
-                
-                // If the new subarray length is greater, or if the length is the same but the sum is smaller, update dp[where].
-                if (dp[where].first < dp[i-1].first + 1) {
-                    dp[where] = p;
-                } else if (dp[where].first == dp[i-1].first + 1) {
-                    dp[where].second = std::min(dp[where].second, pre[where] - pre[i-1]);
-                }
-            }
+            int index = sk[p][1];  // Get the index of the subarray found by binary search
             
-            // Step 6: Update dp[i] by extending the subarray from dp[i-1].
-            // We check if extending the previous subarray gives us a better (or same) solution.
-            if (dp[i].first < dp[i-1].first) {
-                dp[i] = {dp[i-1].first, dp[i-1].second + pre[i] - pre[i-1]};
-            } else if (dp[i].first == dp[i-1].first) {
-                dp[i].second = min(dp[i].second, pre[i] - pre[i-1] + dp[i-1].second);
-            }
-        }
-
-        // Step 7: Extract the maximum length from the dp array.
-        int ans = 0;
-        for (auto &[len, su] : dp) {
-            ans = max(ans, len);
+            // Step 3: Update dp[i] based on the best previous subarray
+            dp[i] = dp[index] + 1;  // Extend the maximum length by including the new subarray
+            
+            // Calculate the sum for the next subarray using the current index
+            long long add = 2 * v[i] - v[index];
+            
+            // Step 4: Maintain the stack such that it always has non-decreasing values of `add`
+            while (sk.back()[0] >= add)
+                sk.pop_back();  // Remove the elements from the stack that violate the non-decreasing order
+            
+            // Push the new pair {add, i} to the stack
+            sk.push_back({add, i});
         }
         
-        return ans;
+        // Step 5: Return the maximum length of the non-decreasing subarray found
+        return dp[n];
     }
 };
