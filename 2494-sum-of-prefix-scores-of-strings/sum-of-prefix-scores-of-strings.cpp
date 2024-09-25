@@ -9,7 +9,7 @@ public:
         for (int i = 0; i < n; i++) {
             long long hash = 0;  // Initialize hash for the current string.
             for (auto &ch : nums[i]) {  // For each character in the current string:
-                hash = (hash * 97 + (ch)) % mod;  // Update the hash using the current character.
+                hash = (hash * 101 + (ch)) % mod;  // Update the hash using the current character.
                 mp[hash]++;  // Increment the count of this particular prefix hash in the map.
             }
         }
@@ -20,7 +20,7 @@ public:
             int count = 0;  // To store the sum of prefix scores for the current string.
             long long hash = 0;  // Initialize hash for the current string.
             for (auto &ch : nums[i]) {  // For each character in the current string:
-                hash = (hash * 97 + (ch)) % mod;  // Recalculate the hash for each prefix.
+                hash = (hash * 101 + (ch)) % mod;  // Recalculate the hash for each prefix.
                 count += mp[hash];  // Add the count of this prefix from the hash map to the score.
             }
             ans[i] = count;  // Store the total prefix score for this string.
