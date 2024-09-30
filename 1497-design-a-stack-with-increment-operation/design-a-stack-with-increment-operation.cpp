@@ -1,34 +1,52 @@
 class CustomStack {
 private:
     // Vector to store stack elements
-    vector<int> stackVector;
+    vector<int> stackArray;
 
-    // Index of the top element in the stack
+    // Vector to store increments for lazy propagation
+    vector<int> incrementArray;
+
+    // Current top index of the stack
     int topIndex;
 
 public:
     CustomStack(int maxSize) {
-        stackVector.resize(maxSize);
+        stackArray.resize(maxSize);
+        incrementArray.resize(maxSize);
         topIndex = -1;
     }
 
     void push(int x) {
-        if (topIndex < (int)(stackVector.size()) - 1) {
-            stackVector[++topIndex] = x;
+        if (topIndex < (int)(stackArray.size()) - 1) {
+            stackArray[++topIndex] = x;
         }
     }
 
     int pop() {
-        if (topIndex >= 0) {
-            return stackVector[topIndex--];
+        if (topIndex < 0) {
+            return -1;
         }
-        return -1;  // Return -1 if the stack is empty
+
+        // Calculate the actual value with increment
+        int result = stackArray[topIndex] + incrementArray[topIndex];
+
+        // Propagate the increment to the element below
+        if (topIndex > 0) {
+            incrementArray[topIndex - 1] += incrementArray[topIndex];
+        }
+
+        // Reset the increment for this position
+        incrementArray[topIndex] = 0;
+
+        topIndex--;
+        return result;
     }
 
     void increment(int k, int val) {
-        int limit = min(k, topIndex + 1);
-        for (int i = 0; i < limit; i++) {
-            stackVector[i] += val;
+        if (topIndex >= 0) {
+            // Apply increment to the topmost element of the range
+            int incrementIndex = min(topIndex, k - 1);
+            incrementArray[incrementIndex] += val;
         }
     }
 };
