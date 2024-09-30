@@ -1,56 +1,35 @@
 class CustomStack {
 private:
-    // Vector to store stack elements
-    vector<int> stackArray;
-
-    // Vector to store increments for lazy propagation
-    vector<int> incrementArray;
-
-    // Current top index of the stack
-    int topIndex;
+    list<int> stack;
+    int maxSize;
 
 public:
-    CustomStack(int maxSize) {
-        stackArray.resize(maxSize);
-        incrementArray.resize(maxSize);
-        topIndex = -1;
-    }
+    CustomStack(int maxSize) { this->maxSize = maxSize; }
 
     void push(int x) {
-        if (topIndex < (int)(stackArray.size()) - 1) {
-            stackArray[++topIndex] = x;
+        // Add the element to the top of the stack if it hasn't reached maxSize
+        if (stack.size() < maxSize) {
+            stack.push_back(x);
         }
     }
 
     int pop() {
-        if (topIndex < 0) {
-            return -1;
-        }
-
-        // Calculate the actual value with increment
-        int result = stackArray[topIndex] + incrementArray[topIndex];
-
-        // Propagate the increment to the element below
-        if (topIndex > 0) {
-            incrementArray[topIndex - 1] += incrementArray[topIndex];
-        }
-
-        // Reset the increment for this position
-        incrementArray[topIndex] = 0;
-
-        topIndex--;
-        return result;
+        // Return -1 if the stack is empty, otherwise remove and return the top
+        // element
+        if (stack.empty()) return -1;
+        int topElement = stack.back();
+        stack.pop_back();
+        return topElement;
     }
 
     void increment(int k, int val) {
-        if (topIndex >= 0) {
-            // Apply increment to the topmost element of the range
-            int incrementIndex = min(topIndex, k - 1);
-            incrementArray[incrementIndex] += val;
+        // Increment the bottom k elements (or all elements if k > stack size)
+        auto it = stack.begin();
+        for (int i = 0; i < k && it != stack.end(); i++, it++) {
+            *it += val;
         }
     }
 };
-
 /**
  * Your CustomStack object will be instantiated and called as such:
  * CustomStack* obj = new CustomStack(maxSize);
