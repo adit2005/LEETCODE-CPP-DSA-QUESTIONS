@@ -1,6 +1,3 @@
-#include <vector>
-using namespace std;
-
 class Solution {
 public:
     double new21Game(int n, int k, int maxPts) {
@@ -15,10 +12,11 @@ public:
         for (int i = 1; i <= n; ++i) {
             dp[i] = Wsum / maxPts;
             
-            // Only add dp[i] to the result if i >= k, which means Alice has stopped drawing.
+            
             if (i < k) {
                 Wsum += dp[i];
-            } else {
+            }
+            else {
                 result += dp[i];
             }
             
