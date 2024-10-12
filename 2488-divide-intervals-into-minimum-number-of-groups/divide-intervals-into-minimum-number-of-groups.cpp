@@ -1,23 +1,22 @@
 class Solution {
 public:
     int minGroups(vector<vector<int>>& intervals) {
-        // Convert the intervals to two events
-        // start as {start, 1} and end as {end, -1}
-        vector<pair<int, int>> intervalsWithEnd;
-        for (vector<int> interval : intervals) {
-            intervalsWithEnd.push_back({interval[0], 1});
-            intervalsWithEnd.push_back({interval[1] + 1, -1});
-        }
+        map<int, int> pointToCount;
 
-        // Sort the events according to the number and then by the value (1/-1).
-        sort(intervalsWithEnd.begin(), intervalsWithEnd.end());
+        // Mark the starting and ending points in the map
+        for (vector<int> interval : intervals) {
+            pointToCount[interval[0]]++;
+            pointToCount[interval[1] + 1]--;
+        }
 
         int concurrentIntervals = 0;
         int maxConcurrentIntervals = 0;
-        for (auto p : intervalsWithEnd) {
-            // Keep track of currently active intersecting intervals.
+        // Iterate over the numbers in ascending order
+        for (pair<int, int> p : pointToCount) {
+            // Add the currently active intervals
             concurrentIntervals += p.second;
-            // Update the maximum number of active intervals.
+
+            // Update the maximum active intervals at any time
             maxConcurrentIntervals =
                 max(maxConcurrentIntervals, concurrentIntervals);
         }
