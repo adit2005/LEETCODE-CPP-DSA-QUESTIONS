@@ -1,9 +1,16 @@
 class Solution {
 public:
     int minGroups(vector<vector<int>>& intervals) {
-        map<int, int> pointToCount;
+        // Find the minimum and maximum value in the interval
+        int rangeStart = INT_MAX;
+        int rangeEnd = INT_MIN;
+        for (vector<int> interval : intervals) {
+            rangeStart = min(rangeStart, interval[0]);
+            rangeEnd = max(rangeEnd, interval[1]);
+        }
 
-        // Mark the starting and ending points in the map
+        // Initialize the list with all zeroes
+        vector<int> pointToCount(rangeEnd + 2, 0);
         for (vector<int> interval : intervals) {
             pointToCount[interval[0]]++;
             pointToCount[interval[1] + 1]--;
@@ -11,12 +18,9 @@ public:
 
         int concurrentIntervals = 0;
         int maxConcurrentIntervals = 0;
-        // Iterate over the numbers in ascending order
-        for (pair<int, int> p : pointToCount) {
-            // Add the currently active intervals
-            concurrentIntervals += p.second;
-
-            // Update the maximum active intervals at any time
+        for (int i = rangeStart; i <= rangeEnd+1; i++) {
+            // Update currently active intervals
+            concurrentIntervals += pointToCount[i];
             maxConcurrentIntervals =
                 max(maxConcurrentIntervals, concurrentIntervals);
         }
