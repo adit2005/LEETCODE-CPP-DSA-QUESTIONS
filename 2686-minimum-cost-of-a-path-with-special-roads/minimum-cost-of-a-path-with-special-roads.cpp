@@ -1,11 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <cmath>
-#include <climits>
-
-using namespace std;
-
 class Solution {
 public:
     int minimumCost(vector<int>& start, vector<int>& target, vector<vector<int>>& specialRoads) {
@@ -21,7 +13,7 @@ public:
             int x2 = specialRoads[i][2], y2 = specialRoads[i][3];
             int cost = specialRoads[i][4];
             
-            // Calculate distance from start to the start of the special road plus the special road cost.
+          
             int startToSpecialRoad = abs(start[0] - x1) + abs(start[1] - y1) + cost;
             dist[i] = startToSpecialRoad;
             pq.push({startToSpecialRoad, i});
@@ -30,7 +22,7 @@ public:
         int minCost = abs(start[0] - target[0]) + abs(start[1] - target[1]); // Direct path without using special roads.
 
         // Dijkstra's algorithm to process each special road.
-        while (!pq.empty()) {
+        while (!pq.empty()) {                                                                     
             auto [currentDist, u] = pq.top();
             pq.pop();
             
