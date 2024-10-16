@@ -33,7 +33,7 @@ public:
         ll pick = 1e9, notPick = 1e9;
 
         // Option 1: Do not use the current special road, move to the next one.
-        notPick = min(notPick, solve(index + 1, pre, x1, y1, x2, y2, specialRoads, dp));
+        notPick = solve(index + 1, pre, x1, y1, x2, y2, specialRoads, dp);
 
         // Determine the previous coordinates, either start point or the end of the last used special road.
         ll pre1 = -1, pre2 = -1;
@@ -50,7 +50,7 @@ public:
         ll t = abs(specialRoads[index][0] - pre1) + abs(specialRoads[index][1] - pre2);
 
         // Add the cost of using this special road and solve recursively.
-        pick = min(pick, specialRoads[index][4] + t + solve(index + 1, index, x1, y1, x2, y2, specialRoads, dp));
+        pick = specialRoads[index][4] + t + solve(index + 1, index, x1, y1, x2, y2, specialRoads, dp);
 
         // Store the minimum of picking or not picking the current road in the memoization table.
         return dp[index + 1][pre + 1] = min(pick, notPick);
