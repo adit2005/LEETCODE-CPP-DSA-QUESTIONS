@@ -1,36 +1,51 @@
 class Solution {
 public:
-    bool makesquare(vector<int>& matchsticks) {
-        int sum = accumulate(matchsticks.begin(), matchsticks.end(), 0);
-        if (matchsticks.size() < 4 || sum % 4) return false;
-        
-        int target = sum / 4;
-        sort(matchsticks.rbegin(), matchsticks.rend()); // Sort in descending order to place larger sticks first
-        vector<int> sides(4, 0); // To keep track of each side's length
-        
-        return backtrack(matchsticks, sides, 0, target);
-    }
+    int n;
+    int visited[16];
     
-    bool backtrack(vector<int>& matchsticks, vector<int>& sides, int index, int target) {
-        if (index == matchsticks.size()) {
-            // Check if all four sides are equal to the target length
-            return sides[0] == target && sides[1] == target && sides[2] == target && sides[3] == target;
+    bool possible(vector<int>& matchsticks, int numsIndex, int currSum, int& subsetSum, int k) {
+        if(k == 1)
+            return true;
+        if(currSum == subsetSum) {
+            return possible(matchsticks, n-1, 0, subsetSum, k-1);
         }
         
-        for (int i = 0; i < 4; i++) {
-            // Try adding the current matchstick to each side
-            if (sides[i] + matchsticks[index] <= target) {
-                sides[i] += matchsticks[index];
-                
-                if (backtrack(matchsticks, sides, index + 1, target)) return true;
-                
-                sides[i] -= matchsticks[index];
-            }
+        for(int i = numsIndex; i>=0; i--) {
+            if(visited[i] || currSum + matchsticks[i] > subsetSum)
+                continue;
             
-            // If the current side is 0, then adding the stick to any other empty side would result in the same outcome.
-            //if (sides[i] == 0) break;
+            visited[i] = 1;
+            currSum   += matchsticks[i];
+            
+            if(possible(matchsticks, i+1, currSum, subsetSum, k))
+                return true;
+            
+            visited[i] = 0;
+            currSum   -= matchsticks[i];
         }
         
         return false;
+    }
+    
+    bool makesquare(vector<int>& matchsticks) {
+        int sum = accumulate(begin(matchsticks), end(matchsticks), 0);
+        int k   = 4; //using concept of Leetcode Problem "Partition to K Equal Sum Subsets"
+        /*
+            If we are able to divide array in 4 parts each of which has equal sum (side of square)
+            then it's possible to form the square with that equal subset sum as the side of square
+        */
+        
+        if(sum%4 != 0)
+            return false;
+        
+        memset(visited, 0, sizeof(visited));
+        
+        n                   = matchsticks.size();
+        int subsetSum       = sum/4;
+        int numsIndex       = n-1;
+        int currSum         = matchsticks[numsIndex];
+        visited[numsIndex]  = 1;
+        
+        return possible(matchsticks, numsIndex, currSum, subsetSum, k);
     }
 };
