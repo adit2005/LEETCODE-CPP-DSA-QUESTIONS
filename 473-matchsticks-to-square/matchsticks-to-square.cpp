@@ -28,7 +28,7 @@ public:
             }
             
             // If the current side is 0, then adding the stick to any other empty side would result in the same outcome.
-            if (sides[i] == 0) break;
+            //if (sides[i] == 0) break;
         }
         
         return false;
