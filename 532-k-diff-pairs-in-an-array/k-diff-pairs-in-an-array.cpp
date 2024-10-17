@@ -9,14 +9,14 @@ public:
             // the current number and that number equals k
             if (visited.count(number - k)) {
                 // If such a number is found, insert the smaller number of the pair into foundPairs
-                foundPairs.insert(number );
+                foundPairs.insert(number-k );
             }
           
             // Check if there's a number in visited set such that the difference between
             // that number and the current number equals k
             if (visited.count(number + k)) {
                 // If such a number is found, insert the current number into foundPairs
-                foundPairs.insert(number+k);
+                foundPairs.insert(number);
             }
           
             // Mark the current number as visited
