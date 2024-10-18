@@ -1,41 +1,32 @@
 class Solution {
 public:
     int countMaxOrSubsets(vector<int>& nums) {
-        int n = nums.size();
+        // Calculate the maximum possible OR value
         int maxOrValue = 0;
-
-        // Calculate the maximum OR value
         for (int num : nums) {
             maxOrValue |= num;
         }
 
-        vector<vector<int>> memo(n, vector<int>(maxOrValue + 1, -1));
+        int totalSubsets = 1 << nums.size();  // 2^n subsets
+        int subsetsWithMaxOr = 0;
 
-        return countSubsetsRecursive(nums, 0, 0, maxOrValue, memo);
-    }
+        // Iterate through all possible subsets
+        for (int subsetMask = 0; subsetMask < totalSubsets; subsetMask++) {
+            int currentOrValue = 0;
 
-private:
-    int countSubsetsRecursive(vector<int>& nums, int index, int currentOr,
-                              int targetOr, vector<vector<int>>& memo) {
-        // Base case: reached the end of the array
-        if (index == nums.size()) {
-            return (currentOr == targetOr) ? 1 : 0;
+            // Calculate OR value for the current subset
+            for (int i = 0; i < nums.size(); i++) {
+                if (((subsetMask >> i) & 1) == 1) {
+                    currentOrValue |= nums[i];
+                }
+            }
+
+            // If current subset's OR equals maxOrValue, increment count
+            if (currentOrValue == maxOrValue) {
+                subsetsWithMaxOr++;
+            }
         }
 
-        // Check if the result for this state is already memoized
-        if (memo[index][currentOr] != -1) {
-            return memo[index][currentOr];
-        }
-
-        // Don't include the current number
-        int countWithout =
-            countSubsetsRecursive(nums, index + 1, currentOr, targetOr, memo);
-
-        // Include the current number
-        int countWith = countSubsetsRecursive(
-            nums, index + 1, currentOr | nums[index], targetOr, memo);
-
-        // Memoize and return the result
-        return memo[index][currentOr] = countWithout + countWith;
+        return subsetsWithMaxOr;
     }
 };
