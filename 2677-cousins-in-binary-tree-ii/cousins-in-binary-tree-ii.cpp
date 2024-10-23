@@ -12,53 +12,54 @@
 class Solution {
 public:
     TreeNode* replaceValueInTree(TreeNode* root) {
-        if (!root) return root;
+        if (root == nullptr) {
+            return root;
+        }
 
         queue<TreeNode*> nodeQueue;
         nodeQueue.push(root);
-        vector<int> levelSums;
+        int previousLevelSum = root->val;
 
-        // First BFS: Calculate sum of nodes at each level
-        while (!nodeQueue.empty()) {
-            int levelSum = 0;
-            int levelSize = nodeQueue.size();
-            for (int i = 0; i < levelSize; ++i) {
-                TreeNode* currentNode = nodeQueue.front();
-                nodeQueue.pop();
-                levelSum += currentNode->val;
-                if (currentNode->left) nodeQueue.push(currentNode->left);
-                if (currentNode->right) nodeQueue.push(currentNode->right);
-            }
-            levelSums.push_back(levelSum);
-        }
-
-        // Second BFS: Update each node's value to sum of its cousins
-        nodeQueue.push(root);
-        int levelIndex = 1;
-        root->val = 0;  // Root has no cousins
         while (!nodeQueue.empty()) {
             int levelSize = nodeQueue.size();
-            for (int i = 0; i < levelSize; ++i) {
+            int currentLevelSum = 0;
+
+            for (int i = 0; i < levelSize; i++) {
                 TreeNode* currentNode = nodeQueue.front();
                 nodeQueue.pop();
+                // Update node value to cousin sum.
+                currentNode->val = previousLevelSum - currentNode->val;
 
+                // Calculate sibling sum.
                 int siblingSum =
-                    (currentNode->left ? currentNode->left->val : 0) +
-                    (currentNode->right ? currentNode->right->val : 0);
+                    (currentNode->left != nullptr ? currentNode->left->val
+                                                  : 0) +
+                    (currentNode->right != nullptr ? currentNode->right->val
+                                                   : 0);
 
-                if (currentNode->left) {
-                    currentNode->left->val = levelSums[levelIndex] - siblingSum;
-                    nodeQueue.push(currentNode->left);
+                if (currentNode->left != nullptr) {
+                    currentLevelSum +=
+                        currentNode->left
+                            ->val;  // Accumulate current level sum.
+                    currentNode->left->val =
+                        siblingSum;  // Update left child's value.
+                    nodeQueue.push(
+                        currentNode->left);  // Add to queue for next level.
                 }
-                if (currentNode->right) {
+                if (currentNode->right != nullptr) {
+                    currentLevelSum +=
+                        currentNode->right
+                            ->val;  // Accumulate current level sum.
                     currentNode->right->val =
-                        levelSums[levelIndex] - siblingSum;
-                    nodeQueue.push(currentNode->right);
+                        siblingSum;  // Update right child's value.
+                    nodeQueue.push(
+                        currentNode->right);  // Add to queue for next level.
                 }
             }
-            ++levelIndex;
-        }
 
+            previousLevelSum = currentLevelSum;  // Update previous level sum
+                                                 // for next iteration.
+        }
         return root;
     }
-};;
+};
