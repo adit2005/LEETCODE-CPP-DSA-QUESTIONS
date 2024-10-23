@@ -10,56 +10,49 @@
  * };
  */
 class Solution {
+private:
+    // Array to store the sum of values at each level
+    int levelSums[100000];
+
 public:
     TreeNode* replaceValueInTree(TreeNode* root) {
-        if (root == nullptr) {
-            return root;
-        }
-
-        queue<TreeNode*> nodeQueue;
-        nodeQueue.push(root);
-        int previousLevelSum = root->val;
-
-        while (!nodeQueue.empty()) {
-            int levelSize = nodeQueue.size();
-            int currentLevelSum = 0;
-
-            for (int i = 0; i < levelSize; i++) {
-                TreeNode* currentNode = nodeQueue.front();
-                nodeQueue.pop();
-                // Update node value to cousin sum.
-                currentNode->val = previousLevelSum - currentNode->val;
-
-                // Calculate sibling sum.
-                int siblingSum =
-                    (currentNode->left != nullptr ? currentNode->left->val
-                                                  : 0) +
-                    (currentNode->right != nullptr ? currentNode->right->val
-                                                   : 0);
-
-                if (currentNode->left != nullptr) {
-                    currentLevelSum +=
-                        currentNode->left
-                            ->val;  // Accumulate current level sum.
-                    currentNode->left->val =
-                        siblingSum;  // Update left child's value.
-                    nodeQueue.push(
-                        currentNode->left);  // Add to queue for next level.
-                }
-                if (currentNode->right != nullptr) {
-                    currentLevelSum +=
-                        currentNode->right
-                            ->val;  // Accumulate current level sum.
-                    currentNode->right->val =
-                        siblingSum;  // Update right child's value.
-                    nodeQueue.push(
-                        currentNode->right);  // Add to queue for next level.
-                }
-            }
-
-            previousLevelSum = currentLevelSum;  // Update previous level sum
-                                                 // for next iteration.
-        }
+        calculateLevelSum(root, 0);              // First pass to calculate sums
+        replaceValueInTreeInternal(root, 0, 0);  // Second pass to update values
         return root;
+    }
+
+    // First DFS to calculate the sum of values at each level
+    void calculateLevelSum(TreeNode* node, int level) {
+        if (node == nullptr) {
+            return;
+        }
+
+        levelSums[level] += node->val;  // Accumulate sum at the current level
+        calculateLevelSum(node->left, level + 1);   // Recur for the left child
+        calculateLevelSum(node->right, level + 1);  // Recur for the right child
+    }
+
+    // Second DFS to replace each node's value with the sum of its cousins
+    void replaceValueInTreeInternal(TreeNode* node, int siblingSum, int level) {
+        if (node == nullptr) {
+            return;
+        }
+
+        // Left child value
+        int leftChildVal = node->left == nullptr ? 0 : node->left->val;
+        // Right child value
+        int rightChildVal = node->right == nullptr ? 0 : node->right->val;
+
+        // For the root and its children, set value to 0
+        if (level == 0 || level == 1) {
+            node->val = 0;
+        } else {
+            // Set the node's value to the sum of its cousins
+            node->val = levelSums[level] - node->val - siblingSum;
+        }
+
+        // Recur for left and right children
+        replaceValueInTreeInternal(node->left, rightChildVal, level + 1);
+        replaceValueInTreeInternal(node->right, leftChildVal, level + 1);
     }
 };
