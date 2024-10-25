@@ -12,52 +12,39 @@
 class Solution {
 public:
     bool isEvenOddTree(TreeNode* root) {
-        // Create a queue for nodes that need to be visted and add the root
-        queue<TreeNode*> queue;
         TreeNode* current = root;
-        queue.push(current);
+        return dfs(current, 0);
+    }
 
-        // Keeps track of whether we are on an even level
-        bool even = true;
-
-        // While there are more nodes in the queue
-        // Determine the size of the level and handle the nodes
-        while (!queue.empty()) {
-            int size = queue.size();
-
-            // Prev holds the value of the previous node in this level
-            int prev = INT_MAX;
-            if (even) {
-                prev = INT_MIN;
-            }
-
-            // While there are more nodes in this level
-            // Remove a node, check whether it satisfies the conditons
-            // Add its children to the queue
-            while (size > 0) {
-                current = queue.front();
-                queue.pop();
-
-                // If on an even level, check that the node's value is odd and greater than prev
-                // If on an odd level, check that the node's value is even and less than prev
-                if ((even && (current->val % 2 == 0 || current->val <= prev)) || 
-                        (!even && (current->val % 2 == 1 || current->val >= prev))) {
-                    return false;
-                }
-                prev = current->val;
-                if (current->left) {
-                    queue.push(current->left);
-                }
-                if (current->right) {
-                    queue.push(current->right);
-                }
-                // Decrement size, we have handled a node on this level
-                size--;
-            }
-            // Flip the value of even, the next level will be opposite
-            even = !even;
+private:
+    vector<int> prev;
+    bool dfs(TreeNode* current, size_t level) {
+        // Base case, an empty tree is Even-Odd
+        if (current == nullptr) {
+            return true;
         }
-        // If every node meets the condtions, the tree is Even-Odd
-        return true;
+
+        // Compare the parity of current and level
+        if (current->val % 2 == level % 2) {
+            return false;
+        }
+
+        // Resize prev to make room for the new level
+        prev.resize(max(prev.size(), level + 1));
+
+        // If there are previous nodes on this level, check increasing/decreasing
+        // If on an even level, check that currrent's value is greater than the previous on this level
+        // If on an odd level, check that current's value is less than the previous on this level
+        if (prev[level] != 0 && 
+                ((level % 2 == 0 && current->val <= prev[level]) ||
+                 (level % 2 == 1 && current->val >= prev[level]))) {
+            return false;  // Not in the required order
+        }
+
+        // Add current value to prev at index level
+        prev[level] = current->val;
+
+        // Recursively call DFS on the left and right children
+        return dfs(current->left, level + 1) && dfs(current->right, level + 1);
     }
 };
