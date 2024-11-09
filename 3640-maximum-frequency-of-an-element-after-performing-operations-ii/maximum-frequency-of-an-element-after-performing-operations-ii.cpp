@@ -1,36 +1,44 @@
 class Solution {
 public:
-    int maxFrequency(vector<int>& A, int k, int numOperations) {
-        sort(A.begin(), A.end());
+    int maxFrequency(vector<int>& nums, int k, int numOperations) {
+        int n = nums.size(), ans = 0, left = 0, right = 0;
+        sort(nums.begin(), nums.end());
 
-        // Populate the frequency map before Case 1
+        // HashMap to store the frequency of each number in the sorted array
         unordered_map<int, int> count;
-        for (int a : A) {
-            count[a]++;
+        for(int num : nums) {
+            count[num]++;
         }
 
-        // Case 1
-        int res = 0, i = 0, j = 0, n = A.size();
-        for (int a : A) {
-            while (j < n && A[j] <= a + k) {
-                j++;
+        // First pass: choose an existing number as the "reference point"
+        for(int mid = 0; mid < n; mid++) {
+            // Move the left pointer to maintain that the difference between nums[mid] and nums[left] is <= k
+            while(nums[mid] - nums[left] > k) {
+                left++;
             }
-            while (i < n && A[i] < a - k) {
-                i++;
+
+            // Move the right pointer to maintain that the difference between nums[right] and nums[mid] is <= k
+            while(right < n - 1 && nums[right + 1] - nums[mid] <= k) {
+                right++;
             }
-            // Use the pre-populated frequency map instead of updating during the loop
-            int cur = min(j - i, count[a] + numOperations);
-            res = max(res, cur);
+
+            int total = right - left + 1; // total elements in the current range
+            ans = max(ans, min(total - count[nums[mid]], numOperations) + count[nums[mid]]);
         }
 
-        // Case 2
-        for (int i = 0, j = 0; j < n; j++) {
-            while (A[i] + k + k < A[j]) {
-                i++;
+        // Second pass: choose a non-existent number as the "reference point"
+        left = 0;
+        for(right = 0; right < n; right++) {
+            int mid = (nums[left] + nums[right]) / 2;
+
+            // Move the left pointer until the mid-point falls within range [nums[left], nums[right]]
+            while(mid - nums[left] > k || nums[right] - mid > k) {
+                left++;
+                mid = (nums[left] + nums[right]) / 2;
             }
-            res = max(res, min(j - i + 1, numOperations));
+            ans = max(ans, min(right - left + 1, numOperations));
         }
-        
-        return res;
+
+        return ans;
     }
 };
