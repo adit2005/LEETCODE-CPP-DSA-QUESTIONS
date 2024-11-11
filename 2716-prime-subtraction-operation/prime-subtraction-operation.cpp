@@ -9,6 +9,18 @@ public:
         return 1;
     }
     bool primeSubOperation(vector<int>& nums) {
+        int maxElement = *max_element(nums.begin(), nums.end());
+
+        // Store the previousPrime array.
+        vector<int> previousPrime(maxElement + 1, 0);
+        for (int i = 2; i <= maxElement; i++) {
+            if (checkPrime(i)) {
+                previousPrime[i] = i;
+            } else {
+                previousPrime[i] = previousPrime[i - 1];
+            }
+        }
+
         for (int i = 0; i < nums.size(); i++) {
             int bound;
             // In case of first index, we need to find the largest prime less
@@ -28,13 +40,7 @@ public:
             }
 
             // Find the largest prime less than bound.
-            int largestPrime = 0;
-            for (int j = bound - 1; j >= 2; j--) {
-                if (checkPrime(j)) {
-                    largestPrime = j;
-                    break;
-                }
-            }
+            int largestPrime = previousPrime[bound - 1];
 
             // Subtract this value from nums[i].
             nums[i] = nums[i] - largestPrime;
