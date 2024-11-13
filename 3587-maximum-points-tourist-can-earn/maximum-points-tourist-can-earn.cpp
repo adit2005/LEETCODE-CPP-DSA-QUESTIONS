@@ -7,38 +7,30 @@ using namespace std;
 class Solution {
 public:
     int maxScore(int n, int k, vector<vector<int>>& stayScore, vector<vector<int>>& travelScore) {
-        // Memoization table to store results for each (city, day) state
-        vector<vector<int>> memo(n, vector<int>(k + 1, -1));
+        // Initialize dp table, where dp[day][city] represents the maximum score on `day` in `city`
+        vector<vector<int>> dp(k + 1, vector<int>(n, 0));
         
-        // Maximum points we can get starting from any city on day 0
-        int maxPoints = 0;
-        for (int startCity = 0; startCity < n; ++startCity) {
-            int points = dfs(startCity, 0, n, k, stayScore, travelScore, memo);
-            maxPoints = max(maxPoints, points);
-        }
-        return maxPoints;
-    }
+        // Start filling from day k - 1 (second last day) up to day 0
+        for (int day = k - 1; day >= 0; --day) {
+            for (int city = 0; city < n; ++city) {
+                // Option 1: Stay in the same city
+                dp[day][city] = stayScore[day][city] + dp[day + 1][city];
 
-private:
-    int dfs(int city, int day, int n, int k, vector<vector<int>>& stayScore, vector<vector<int>>& travelScore, vector<vector<int>>& memo) {
-        // Base case: if day == k, vacation is over
-        if (day == k) return 0;
-
-        // Check if we already computed this state
-        if (memo[city][day] != -1) return memo[city][day];
-
-        // Choice 1: Stay in the same city
-        int maxPoints = stayScore[day][city] + dfs(city, day + 1, n, k, stayScore, travelScore, memo);
-
-        // Choice 2: Travel to another city
-        for (int nextCity = 0; nextCity < n; ++nextCity) {
-            if (nextCity != city) {
-                int points = travelScore[city][nextCity] + dfs(nextCity, day + 1, n, k, stayScore, travelScore, memo);
-                maxPoints = max(maxPoints, points);
+                // Option 2: Travel to another city
+                for (int nextCity = 0; nextCity < n; ++nextCity) {
+                    if (nextCity != city) {
+                        dp[day][city] = max(dp[day][city], travelScore[city][nextCity] + dp[day + 1][nextCity]);
+                    }
+                }
             }
         }
+        
+        // The answer is the maximum score possible starting from any city on day 0
+        int maxPoints = 0;
+        for (int startCity = 0; startCity < n; ++startCity) {
+            maxPoints = max(maxPoints, dp[0][startCity]);
+        }
 
-        // Save and return the best score for this state
-        return memo[city][day] = maxPoints;
+        return maxPoints;
     }
 };
