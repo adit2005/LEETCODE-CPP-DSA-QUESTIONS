@@ -1,48 +1,76 @@
-#define ll long long
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+const long long inf = 1e9 + 7; // Large constant for negative infinity
+
+// Binary Indexed Tree (BIT) implementation for range queries and point updates
+class BIT {
+    vector<long long> bit;
+public:
+    BIT(int size) : bit(size + 1, -inf) {}
+
+    // Query the maximum value in the range [1, idx]
+    long long pre_max(int idx) {
+        idx += 1; // BIT uses 1-based indexing
+        long long ans = -inf;
+        while (idx > 0) {
+            ans = max(ans, this->bit[idx]);
+            idx -= idx & -idx; // Move to parent node
+        }
+        return ans;
+    }
+
+    // Update the BIT by setting the value at index 'idx' to the maximum of the current value and 'val'
+    void update(int idx, long long val) {
+        idx += 1; // BIT uses 1-based indexing
+        while (idx < this->bit.size()) {
+            this->bit[idx] = max(this->bit[idx], val);
+            idx += idx & -idx; // Move to parent node
+        }
+    }
+};
 
 class Solution {
 public:
     long long maxBalancedSubsequenceSum(vector<int>& nums) {
+        vector<int> mapping;
         int n = nums.size();
-        vector<int> val(n);
-        
-        // Compute val[i] = nums[i] - i
-        for (int i = 0; i < n; i++) {
-            val[i] = nums[i] - i;
+
+        // Step 1: Preprocess the nums array by subtracting indices from the values
+        for (int i = 0; i < n; ++i) {
+            mapping.push_back(nums[i] - i);
         }
 
-        // Map to store maximum sum for each key, and set to track keys
-        map<int, ll> mp;
-        set<int> st;
+        // Step 2: Sort the mapping and remove duplicates
+        sort(mapping.begin(), mapping.end());
+        mapping.erase(unique(mapping.begin(), mapping.end()), mapping.end());
 
-        // Initialize the first value
-        st.insert(val[0]);
-        mp[val[0]] = nums[0];
-        ll ans = nums[0];
+        // Step 3: Initialize the BIT for tracking the maximum values
+        BIT bit(n);
+        long long ans = -inf; // To store the maximum balanced subsequence sum
 
-        for (int i = 1; i < n; i++) {
-            // Find the largest key <= val[i]
-            auto it = st.upper_bound(val[i]);
-            if (it != st.begin()) {
-                it--; // Move to valid key
-                mp[val[i]] = max(nums[i] + mp[*it], 1LL * nums[i]);
-            } else {
-                mp[val[i]] = nums[i]; // No valid previous key
-            }
+        // Step 4: Iterate over the array, and use the BIT to compute the maximum sum
+        for (int i = 0; i < n; ++i) {
+            int &x = nums[i];
 
-            // Remove suboptimal keys
-            it = st.upper_bound(val[i]);
-            while (it != st.end() && mp[*it] <= mp[val[i]] ) {
-                st.erase(it++);
-            }
+            // Step 5: Find the index in the mapping for the current value (nums[i] - i)
+            int j = lower_bound(mapping.begin(), mapping.end(), x - i) - mapping.begin();
 
-            // Insert the current key into the set
-            st.insert(val[i]);
+            // Step 6: Compute the current sum by querying the BIT for the maximum sum at previous indices
+            long long cur = max(bit.pre_max(j) + x, (long long)x);
+            
+            // Step 7: Update the answer with the maximum sum encountered
+            ans = max(ans, cur);
 
-            // Update the maximum answer
-            ans = max(ans, mp[val[i]]);
+            // Step 8: Update the BIT with the new computed value at index j
+            bit.update(j, cur);
         }
 
+        // Step 9: Return the final result which is the maximum balanced subsequence sum
         return ans;
     }
 };
+
+
