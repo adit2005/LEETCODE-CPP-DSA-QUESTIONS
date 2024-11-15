@@ -1,39 +1,48 @@
+#define ll long long
+
 class Solution {
 public:
     long long maxBalancedSubsequenceSum(vector<int>& nums) {
-        // `m` is a map used to store the maximum sum for balanced subsequences ending with a 
-        // specific "key", which is the difference (nums[i] - i).
-        // Initial value in the map: {INT_MIN, 0}, representing a dummy starting point.
-        map<int, long long> m{{INT_MIN, 0}};
-
-        // Iterate through the array to process each element.
-        for (int i = 0; i < nums.size(); ++i) {
-            // Find the first key in the map that is strictly greater than (nums[i] - i).
-            auto it = m.upper_bound(nums[i] - i);
-
-            // Calculate the maximum sum for a subsequence that includes nums[i].
-            // The maximum sum is:
-            //   - nums[i]: The current value.
-            //   - prev(it)->second: The maximum sum of a valid subsequence ending with a
-            //     difference smaller than or equal to (nums[i] - i).
-            //   - max(0LL, ...): Ensures non-negative contributions from previous sums.
-            long long sum = nums[i] + max(0LL, prev(it)->second);
-
-            // Insert or update the current key (nums[i] - i) with the computed sum.
-            // `insert_or_assign`: If (nums[i] - i) already exists, update its value;
-            // otherwise, insert a new entry.
-            m.insert_or_assign(it, nums[i] - i, sum);
-
-            // Cleanup phase: Remove all keys in the map that have a sum less than or equal
-            // to the current sum. This ensures that the map always retains only the most
-            // optimal (maximum sum) subsequences for each key.
-            for (; it != end(m) && it->second <= sum;) {
-                m.erase(it++);  // Erase suboptimal entries.
-            }
+        int n = nums.size();
+        vector<int> val(n);
+        
+        // Compute val[i] = nums[i] - i
+        for (int i = 0; i < n; i++) {
+            val[i] = nums[i] - i;
         }
 
-        // The largest value in the map corresponds to the maximum sum of a balanced
-        // subsequence in the array. Return this value.
-        return rbegin(m)->second;
+        // Map to store maximum sum for each key, and set to track keys
+        map<int, ll> mp;
+        set<int> st;
+
+        // Initialize the first value
+        st.insert(val[0]);
+        mp[val[0]] = nums[0];
+        ll ans = nums[0];
+
+        for (int i = 1; i < n; i++) {
+            // Find the largest key <= val[i]
+            auto it = st.upper_bound(val[i]);
+            if (it != st.begin()) {
+                it--; // Move to valid key
+                mp[val[i]] = max(nums[i] + mp[*it], 1LL * nums[i]);
+            } else {
+                mp[val[i]] = nums[i]; // No valid previous key
+            }
+
+            // Remove suboptimal keys
+            it = st.upper_bound(val[i]);
+            while (it != st.end() && mp[*it] <= mp[val[i]] && *it > val[i]) {
+                st.erase(it++);
+            }
+
+            // Insert the current key into the set
+            st.insert(val[i]);
+
+            // Update the maximum answer
+            ans = max(ans, mp[val[i]]);
+        }
+
+        return ans;
     }
 };
