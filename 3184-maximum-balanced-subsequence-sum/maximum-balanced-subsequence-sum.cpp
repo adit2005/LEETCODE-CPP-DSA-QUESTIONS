@@ -32,7 +32,7 @@ public:
 
             // Remove suboptimal keys
             it = st.upper_bound(val[i]);
-            while (it != st.end() && mp[*it] <= mp[val[i]] && *it > val[i]) {
+            while (it != st.end() && mp[*it] <= mp[val[i]] ) {
                 st.erase(it++);
             }
 
