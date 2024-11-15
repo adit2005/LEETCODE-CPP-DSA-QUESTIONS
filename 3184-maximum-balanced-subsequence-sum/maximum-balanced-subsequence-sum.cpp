@@ -1,76 +1,74 @@
-#include <iostream>
 #include <vector>
 #include <algorithm>
 using namespace std;
 
-const long long inf = 1e9 + 7; // Large constant for negative infinity
-
-// Binary Indexed Tree (BIT) implementation for range queries and point updates
-class BIT {
-    vector<long long> bit;
+class BinaryIndexedTree {
+private:
+    int size_; // Size of the array
+    vector<long long> tree_; // The underlying data structure
+    const long long INF = 1e18; // An arbitrary large value to represent negative infinity
+  
 public:
-    BIT(int size) : bit(size + 1, -inf) {}
+    // Constructor to initialize the binary indexed tree with given size
+    BinaryIndexedTree(int size) : size_(size), tree_(size + 1, -INF) { }
 
-    // Query the maximum value in the range [1, idx]
-    long long pre_max(int idx) {
-        idx += 1; // BIT uses 1-based indexing
-        long long ans = -inf;
-        while (idx > 0) {
-            ans = max(ans, this->bit[idx]);
-            idx -= idx & -idx; // Move to parent node
+    // Updates the tree by setting the value at 'index' to the maximum of its current value and 'value'
+    void update(int index, long long value) {
+        while (index <= size_) {
+            tree_[index] = max(tree_[index], value);
+            index += index & -index; // Traverse to parent node
         }
-        return ans;
     }
 
-    // Update the BIT by setting the value at index 'idx' to the maximum of the current value and 'val'
-    void update(int idx, long long val) {
-        idx += 1; // BIT uses 1-based indexing
-        while (idx < this->bit.size()) {
-            this->bit[idx] = max(this->bit[idx], val);
-            idx += idx & -idx; // Move to parent node
+    // Queries the maximum value in the range 1...index
+    long long query(int index) {
+        long long max_value = -INF;
+        while (index > 0) {
+            max_value = max(max_value, tree_[index]);
+            index -= index & -index; // Traverse to child node
         }
+        return max_value;
     }
 };
 
 class Solution {
 public:
+    // Function to compute the maximum balanced subsequence sum
     long long maxBalancedSubsequenceSum(vector<int>& nums) {
-        vector<int> mapping;
         int n = nums.size();
-
-        // Step 1: Preprocess the nums array by subtracting indices from the values
+        vector<int> processed_nums(n);
+      
+        // Preprocess the numbers by offsetting with their indices
         for (int i = 0; i < n; ++i) {
-            mapping.push_back(nums[i] - i);
+            processed_nums[i] = nums[i] - i;
         }
-
-        // Step 2: Sort the mapping and remove duplicates
-        sort(mapping.begin(), mapping.end());
-        mapping.erase(unique(mapping.begin(), mapping.end()), mapping.end());
-
-        // Step 3: Initialize the BIT for tracking the maximum values
-        BIT bit(n);
-        long long ans = -inf; // To store the maximum balanced subsequence sum
-
-        // Step 4: Iterate over the array, and use the BIT to compute the maximum sum
+      
+        // Sort and deduplicate the processed numbers
+        sort(processed_nums.begin(), processed_nums.end());
+        processed_nums.erase(unique(processed_nums.begin(), processed_nums.end()), processed_nums.end());
+      
+        int m = processed_nums.size();
+        BinaryIndexedTree tree(m);
+        
+        // Initialize the global answer to a very small number
+        long long ans = -1e18; 
+        
+        // Process original numbers to update the tree with the maximum value at each point
         for (int i = 0; i < n; ++i) {
-            int &x = nums[i];
-
-            // Step 5: Find the index in the mapping for the current value (nums[i] - i)
-            int j = lower_bound(mapping.begin(), mapping.end(), x - i) - mapping.begin();
-
-            // Step 6: Compute the current sum by querying the BIT for the maximum sum at previous indices
-            long long cur = max(bit.pre_max(j) + x, (long long)x);
+            // Find the index in the processed array using lower_bound
+            int idx = lower_bound(processed_nums.begin(), processed_nums.end(), nums[i] - i) - processed_nums.begin() + 1;
             
-            // Step 7: Update the answer with the maximum sum encountered
-            ans = max(ans, cur);
-
-            // Step 8: Update the BIT with the new computed value at index j
-            bit.update(j, cur);
+            // Query the tree for the maximum sum up to the current index
+            long long value = tree.query(idx) + nums[i];
+            
+            // Update the global maximum balanced subsequence sum
+            ans = max(ans, value);
+            
+            // Update the tree with the new value at the current index
+            tree.update(idx, value);
         }
-
-        // Step 9: Return the final result which is the maximum balanced subsequence sum
+      
+        // Return the maximum balanced subsequence sum
         return ans;
     }
 };
-
-
