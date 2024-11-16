@@ -1,29 +1,28 @@
 class Solution {
 public:
     vector<int> resultsArray(vector<int>& nums, int k) {
-        int length = nums.size();
-        vector<int> result(length - k + 1, -1);
-        deque<int> indexDeque;
+        if (k == 1) {
+            return nums;  // If k is 1, every single element is a valid subarray
+        }
 
-        for (int currentIndex = 0; currentIndex < length; currentIndex++) {
-            if (!indexDeque.empty() &&
-                indexDeque.front() < currentIndex - k + 1) {
-                indexDeque.pop_front();
+        size_t length = nums.size();
+        if (length < k) {
+            return {};  // If the array is smaller than k, return an empty result
+        }
+
+        vector<int> result(length - k + 1, -1);  // Initialize results with -1
+        int consecutiveCount = 1;  // Count of consecutive elements
+
+        for (size_t index = 1; index < length; index++) {
+            if (nums[index] == nums[index - 1] + 1) {
+                consecutiveCount++;
+            } else {
+                consecutiveCount = 1;  // Reset count if not consecutive
             }
 
-            if (!indexDeque.empty() &&
-                nums[currentIndex] != nums[currentIndex - 1] + 1) {
-                indexDeque.clear();
-            }
-
-            indexDeque.push_back(currentIndex);
-
-            if (currentIndex >= k - 1) {
-                if (indexDeque.size() == k) {
-                    result[currentIndex - k + 1] = nums[indexDeque.back()];
-                } else {
-                    result[currentIndex - k + 1] = -1;
-                }
+            // If we have enough consecutive elements, update the result
+            if (consecutiveCount >= k) {
+                result[index - k + 1] = nums[index ];
             }
         }
 
