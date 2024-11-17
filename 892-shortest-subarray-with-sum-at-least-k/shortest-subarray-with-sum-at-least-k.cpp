@@ -1,39 +1,40 @@
 class Solution {
 public:
-    int shortestSubarray(vector<int>& nums, int k) {
+    int shortestSubarray(vector<int>& nums, int targetSum) {
         int n = nums.size();
 
-        // Initialize result to the maximum possible integer value
+        // Size is n+1 to handle subarrays starting from index 0
+        vector<long long> prefixSums(n + 1, 0);
+
+        // Calculate prefix sums
+        for (int i = 1; i <= n; i++) {
+            prefixSums[i] = prefixSums[i - 1] + nums[i - 1];
+        }
+
+        deque<int> candidateIndices;
+
         int shortestSubarrayLength = INT_MAX;
 
-        long long cumulativeSum = 0;
-
-        // Min-heap to store cumulative sum and its corresponding index
-        priority_queue<pair<long long, int>, vector<pair<long long, int>>,
-                       greater<>>
-            prefixSumHeap;
-
-        // Iterate through the array
-        for (int i = 0; i < n; i++) {
-            // Update cumulative sum
-            cumulativeSum += nums[i];
-
-            // If cumulative sum is already >= k, update shortest length
-            if (cumulativeSum >= k) {
-                shortestSubarrayLength = min(shortestSubarrayLength, i + 1);
-            }
-
-            // Remove subarrays from heap that can form a valid subarray
-            while (!prefixSumHeap.empty() &&
-                   cumulativeSum - prefixSumHeap.top().first >= k) {
+        for (int i = 0; i <= n; i++) {
+            // Remove candidates from front of deque where subarray sum meets
+            // target
+            while (!candidateIndices.empty() &&
+                   prefixSums[i] - prefixSums[candidateIndices.front()] >=
+                       targetSum) {
                 // Update shortest subarray length
                 shortestSubarrayLength =
-                    min(shortestSubarrayLength, i - prefixSumHeap.top().second);
-                prefixSumHeap.pop();
+                    min(shortestSubarrayLength, i - candidateIndices.front());
+                candidateIndices.pop_front();
             }
 
-            // Add current cumulative sum and index to heap
-            prefixSumHeap.emplace(cumulativeSum, i);
+            // Maintain monotonicity by removing indices with larger prefix sums
+            while (!candidateIndices.empty() &&
+                   prefixSums[i] <= prefixSums[candidateIndices.back()]) {
+                candidateIndices.pop_back();
+            }
+
+            // Add current index to candidates
+            candidateIndices.push_back(i);
         }
 
         // Return -1 if no valid subarray found
