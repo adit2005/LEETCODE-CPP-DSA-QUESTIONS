@@ -1,31 +1,30 @@
 class Solution {
 public:
     long long maximumSubarraySum(vector<int>& nums, int k) {
-        long long ans = 0;
-        long long currentSum = 0;
-        int begin = 0;
-        int end = 0;
+    unordered_map<int, int> freq; // To track frequency of elements
+    long long currentSum = 0, maxSum = 0;
 
-        unordered_map<int, int> numToIndex;
+    // Initialize the sliding window
+    for (int i = 0; i < nums.size(); ++i) {
+        // Add the current element to the window
+        currentSum += nums[i];
+        freq[nums[i]]++;
 
-        while (end < nums.size()) {
-            int currNum = nums[end];
-            int lastOccurrence =
-                (numToIndex.count(currNum) ? numToIndex[currNum] : -1);
-
-            // if current window already has number or if window is too big,
-            // adjust window
-            while (begin <= lastOccurrence || end - begin + 1 > k) {
-                currentSum -= nums[begin];
-                begin++;
+        // Maintain the window size
+        if (i >= k) {
+            currentSum -= nums[i - k];
+            freq[nums[i - k]]--;
+            if (freq[nums[i - k]] == 0) {
+                freq.erase(nums[i - k]);
             }
-            numToIndex[currNum] = end;
-            currentSum += nums[end];
-            if (end - begin + 1 == k) {
-                ans = max(ans, currentSum);
-            }
-            end++;
         }
-        return ans;
+
+        // Check if the current window is valid (distinct elements)
+        if (freq.size() == k) {
+            maxSum = max(maxSum, currentSum);
+        }
     }
+
+    return maxSum;
+}
 };
