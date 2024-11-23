@@ -20,30 +20,19 @@ public:
         // Apply gravity to let stones fall to the lowest possible empty cell in
         // each column
         for (int j = 0; j < m; j++) {
+            int lowestRowWithEmptyCell = n - 1;
             // Process each cell in column `j` from bottom to top
             for (int i = n - 1; i >= 0; i--) {
-                if (result[i][j] == '.') {  // Found an empty cell; check if a
-                                            // stone can fall into it
-                    int nextRowWithStone = -1;
-
-                    // Look for a stone directly above the empty cell
-                    // `result[i][j]`
-                    for (int k = i - 1; k >= 0; k--) {
-                        if (result[k][j] == '*')
-                            break;  // Obstacle blocks any stones above
-                        if (result[k][j] ==
-                            '#') {  // Stone found with no obstacles in between
-                            nextRowWithStone = k;
-                            break;
-                        }
-                    }
-
-                    // If a stone was found above, let it fall into the empty
-                    // cell `result[i][j]`
-                    if (nextRowWithStone != -1) {
-                        result[nextRowWithStone][j] = '.';
-                        result[i][j] = '#';
-                    }
+                // Found a stone - let it fall to the lowest empty cell
+                if (result[i][j] == '#') {
+                    result[i][j] = '.';
+                    result[lowestRowWithEmptyCell][j] = '#';
+                    lowestRowWithEmptyCell--;
+                }
+                // Found an obstacle - reset `lowestRowWithEmptyCell` to the row
+                // directly above it
+                if (result[i][j] == '*') {
+                    lowestRowWithEmptyCell = i - 1;
                 }
             }
         }
