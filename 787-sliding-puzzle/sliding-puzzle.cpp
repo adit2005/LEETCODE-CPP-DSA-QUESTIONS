@@ -1,48 +1,55 @@
 class Solution {
-private:
-    // Direction map for zero's possible moves in a flattened 1D array (2x3
-    // board)
-    vector<vector<int>> directions = {{1, 3}, {0, 2, 4}, {1, 5},
-                                      {0, 4}, {3, 5, 1}, {4, 2}};
-
 public:
     int slidingPuzzle(vector<vector<int>>& board) {
-        // Convert the 2D board into a string representation to use as state
+        // Direction map for zero's possible moves in a 1D representation of the
+        // 2x3 board
+        vector<vector<int>> directions = {{1, 3}, {0, 2, 4}, {1, 5},
+                                          {0, 4}, {1, 3, 5}, {2, 4}};
+
+        string target = "123450";
         string startState;
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 3; j++) {
+
+        // Convert the 2D board into a string representation
+        for (int i = 0; i < board.size(); i++) {
+            for (int j = 0; j < board[0].size(); j++) {
                 startState += to_string(board[i][j]);
             }
         }
 
-        // Map to store the minimum moves for each visited state
-        unordered_map<string, int> visited;
+        unordered_set<string> visited;  // To store visited states
+        queue<string> queue;
+        queue.push(startState);
+        visited.insert(startState);
 
-        // Start DFS traversal from initial board state
-        dfs(startState, visited, startState.find('0'), 0);
+        int moves = 0;
 
-        // Return the minimum moves required to reach the target state, or -1 if
-        // unreachable
-        return visited.count("123450") ? visited["123450"] : -1;
-    }
+        // BFS to find the minimum number of moves
+        while (!queue.empty()) {
+            int size = queue.size();
+            while (size-- > 0) {
+                string currentState = queue.front();
+                queue.pop();
 
-private:
-    void dfs(string state, unordered_map<string, int>& visited, int zeroPos,
-             int moves) {
-        // Skip if this state has been visited with fewer or equal moves
-        if (visited.count(state) && visited[state] <= moves) {
-            return;
+                // Check if we reached the target solved state
+                if (currentState == target) {
+                    return moves;
+                }
+
+                int zeroPos = currentState.find('0');
+                for (int newPos : directions[zeroPos]) {
+                    string nextState = currentState;
+                    swap(nextState[zeroPos], nextState[newPos]);
+
+                    // Skip if this state has been visited
+                    if (visited.count(nextState)) continue;
+
+                    // Mark the new state as visited and add it to the queue
+                    visited.insert(nextState);
+                    queue.push(nextState);
+                }
+            }
+            moves++;
         }
-        visited[state] = moves;
-
-        // Try moving zero to each possible adjacent position
-        for (int nextPos : directions[zeroPos]) {
-            swap(state[zeroPos], state[nextPos]);  // Swap to generate new state
-            dfs(state, visited, nextPos,
-                moves + 1);  // Recursive DFS with updated state and move count
-            swap(state[zeroPos],
-                 state[nextPos]);  // Swap back to restore original state
-        }
+        return -1;
     }
 };
-
