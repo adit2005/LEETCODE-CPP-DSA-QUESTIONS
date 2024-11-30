@@ -14,18 +14,7 @@ public:
 
         vector<int> result;
 
-        // Helper lambda function for DFS traversal,
-        // you can make a seperate private function also
-        function<void(int)> visit = [&](int node) {
-            while (!adjacencyMatrix[node].empty()) {
-                int nextNode = adjacencyMatrix[node].front();
-                adjacencyMatrix[node].pop_front();
-                visit(nextNode);
-            }
-            result.push_back(node);
-        };
-
-        // Find the start node (outDegree == 1 + inDegree )
+        // Find the start node (outDegree == inDegree + 1)
         int startNode = -1;
         for (const auto& entry : outDegree) {
             int node = entry.first;
@@ -40,10 +29,25 @@ public:
             startNode = pairs[0][0];
         }
 
-        // Start DFS traversal
-        visit(startNode);
+        stack<int> nodeStack;
+        nodeStack.push(startNode);
 
-        // Reverse the result since DFS gives us the path in reverse
+        // Iterative DFS using stack
+        while (!nodeStack.empty()) {
+            int node = nodeStack.top();
+            if (!adjacencyMatrix[node].empty()) {
+                // Visit the next node
+                int nextNode = adjacencyMatrix[node].front();
+                adjacencyMatrix[node].pop_front();
+                nodeStack.push(nextNode);
+            } else {
+                // No more neighbors to visit, add node to result
+                result.push_back(node);
+                nodeStack.pop();
+            }
+        }
+
+        // Reverse the result since we collected nodes in reverse order
         reverse(result.begin(), result.end());
 
         // Construct the result pairs
