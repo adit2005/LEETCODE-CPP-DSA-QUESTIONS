@@ -1,42 +1,24 @@
 class Solution {
 public:
     int isPrefixOfWord(string sentence, string searchWord) {
-        // Initialize the word position counter
-        int currentWordPosition = 1;
-        // Initialize the current index in the sentence
-        int currentIndex = 0;
-        // Get the length of the sentence
-        int sentenceLength = sentence.length();
+        // Initialize a string stream to read words from the sentence
+        istringstream sentenceStream(sentence);
+        string currentWord;
 
-        // Loop through the sentence
-        while (currentIndex < sentenceLength) {
-            // Skip leading spaces
-            while (currentIndex < sentenceLength &&
-                   sentence[currentIndex] == ' ') {
-                currentIndex++;
-                currentWordPosition++;
-            }
+        // Start counting word positions from 1
+        int wordPosition = 1;
 
-            // Check if the current word starts with searchWord
-            int matchCount = 0;
-            while (currentIndex < sentenceLength &&
-                   matchCount < searchWord.length() &&
-                   sentence[currentIndex] == searchWord[matchCount]) {
-                currentIndex++;
-                matchCount++;
+        // Loop through each word in the sentence
+        while (sentenceStream >> currentWord) {
+            // Check if the current word is long enough to contain the
+            // searchWord as a prefix and if the prefix matches the searchWord
+            if (currentWord.length() >= searchWord.length() &&
+                currentWord.compare(0, searchWord.length(), searchWord) == 0) {
+                // If a match is found, return the current word position
+                return wordPosition;
             }
-
-            // If the entire searchWord matches, return the current word
-            // position
-            if (matchCount == searchWord.length()) {
-                return currentWordPosition;
-            }
-
-            // Move to the end of the current word
-            while (currentIndex < sentenceLength &&
-                   sentence[currentIndex] != ' ') {
-                currentIndex++;
-            }
+            // Move to the next word position
+            wordPosition++;
         }
         // If no match is found, return -1
         return -1;
