@@ -10,17 +10,15 @@ public:
         vector<vector<int>> adjList1 = buildAdjList(n, edges1);
         vector<vector<int>> adjList2 = buildAdjList(m, edges2);
 
-        int diameter1 =
-            findDiameter(adjList1, 0, -1).first;  // Start DFS for Tree 1
-        int diameter2 =
-            findDiameter(adjList2, 0, -1).first;  // Start DFS for Tree 2
+        // Calculate the diameter of both trees
+        int diameter1 = findDiameter(n, adjList1);
+        int diameter2 = findDiameter(m, adjList2);
 
-        // Calculate the diameter of the combined tree
-        // This accounts for the longest path spanning both trees
+
+        // Calculate the longest path that spans across both trees.
         int combinedDiameter =
             ceil(diameter1 / 2.0) + ceil(diameter2 / 2.0) + 1;
 
-        // Return the maximum diameter among the two trees and the combined tree
         return max({diameter1, diameter2, combinedDiameter});
     }
 
@@ -35,41 +33,53 @@ private:
         return adjList;
     };
 
-    // Helper function to find the diameter of a tree
-    // Returns the diameter and the depth of the node's subtree
-    pair<int, int> findDiameter(vector<vector<int>>& adjList, int node,
-                                int parent) {
-        int maxDepth1 = 0,
-            maxDepth2 =
-                0;  // Tracks the two largest depths from the current node
-        int diameter = 0;  // Tracks the diameter of the subtree
-
-        for (int neighbor :
-             adjList[node]) {  // Iterate through neighbors of the current node
-            if (neighbor == parent)
-                continue;  // Skip the parent to avoid cycles
-
-            // Recursively calculate the diameter and depth of the neighbor's
-            // subtree
-            auto [childDiameter, depth] = findDiameter(adjList, neighbor, node);
-
-            // Update the maximum diameter of the subtree
-            diameter = max(diameter, childDiameter);
-
-            depth++;  // Increment the depth to include the edge to this
-                      // neighbor
-            // Update the two largest depths from the current node
-            if (depth > maxDepth1) {
-                maxDepth2 = maxDepth1;
-                maxDepth1 = depth;
-            } else if (depth > maxDepth2) {
-                maxDepth2 = depth;
+    // Function to find the diameter of a tree using topological sorting
+    int findDiameter(int n, vector<vector<int>>& adjList) {
+        queue<int> leavesQueue;
+        vector<int> degrees(n);
+        // Initialize the degree of each node and add leaves (nodes with degree
+        // 1) to the queue
+        for (int node = 0; node < n; node++) {
+            degrees[node] =
+                adjList[node].size();  // Degree is the number of neighbors
+            if (degrees[node] == 1) {
+                leavesQueue.push(node);
             }
         }
 
-        // Update the diameter to include the path through the current node
-        diameter = max(diameter, maxDepth1 + maxDepth2);
+        int remainingNodes = n;
+        int leavesLayersRemoved = 0;
 
-        return {diameter, maxDepth1};
+        // Process the leaves until there are 2 or fewer nodes remaining
+        while (remainingNodes > 2) {
+            int size = leavesQueue.size();  // Get the number of leaves to
+                                            // remove in this iteration
+            remainingNodes -= size;
+            leavesLayersRemoved++;
+
+            // Remove the leaves from the queue and update the degrees of their
+            // neighbors
+            for (int i = 0; i < size; i++) {
+                int currentNode = leavesQueue.front();
+                leavesQueue.pop();
+
+                // Process the neighbors of the current leaf
+                for (int neighbor : adjList[currentNode]) {
+                    degrees[neighbor]--;  // Decrease the degree of the neighbor
+                    if (degrees[neighbor] == 1) {
+                        leavesQueue.push(
+                            neighbor);  // If the neighbor becomes a leaf, add
+                                        // it to the queue
+                    }
+                }
+            }
+        }
+
+        // If exactly two nodes remain, return the diameter as twice the number
+        // of layers of leaves removed + 1 (as the diameter will include the
+        // final connecting edge)
+        if (remainingNodes == 2) return 2 * leavesLayersRemoved + 1;
+
+        return 2 * leavesLayersRemoved;
     }
 };
