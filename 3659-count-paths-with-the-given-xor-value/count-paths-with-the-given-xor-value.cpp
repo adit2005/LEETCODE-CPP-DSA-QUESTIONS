@@ -1,36 +1,35 @@
 class Solution {
 public:
-    const int MOD = 1e9 + 7;
-
     int countPathsWithXorValue(vector<vector<int>>& grid, int k) {
-        int m = grid.size();
-        int n = grid[0].size();
+        int mod = 1e9 + 7;
+        int n = grid.size(), m = grid[0].size();
 
-        // DP table: dp[i][j][xor_val] stores the number of paths ending at (i, j) with XOR value = xor_val
-        vector<vector<unordered_map<int, int>>> dp(m, vector<unordered_map<int, int>>(n));
+        vector<vector<vector<int>>> dp(n, vector<vector<int>>(m, vector<int>(20, 0)));
 
-        // Initialize the starting cell
-        dp[0][0][grid[0][0]] = 1;
+        // Base case: At destination (n-1, m-1)
+        dp[n - 1][m - 1][grid[n - 1][m - 1] ^ k] = 1;
 
-        // Fill the DP table
-        for (int i = 0; i < m; ++i) {
-            for (int j = 0; j < n; ++j) {
-                for (auto& [xor_val, count] : dp[i][j]) {
-                    // Move down
-                    if (i + 1 < m) {
-                        int new_xor = xor_val ^ grid[i + 1][j];
-                        dp[i + 1][j][new_xor] = (dp[i + 1][j][new_xor] + count) % MOD;
+        // Fill the DP table in bottom-up manner (starting from bottom-right)
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = m - 1; j >= 0; j--) {
+                for (int curr = 0; curr < 16; curr++) {
+                    if (i == n - 1 && j == m - 1) continue; // Skip the destination cell (already initialized)
+
+                    int newCurr = curr ^ grid[i][j];
+
+                    // Move right if within bounds
+                    if (j + 1 < m) {
+                        dp[i][j][curr] = (dp[i][j][curr] + dp[i][j + 1][newCurr]) % mod;
                     }
-                    // Move right
-                    if (j + 1 < n) {
-                        int new_xor = xor_val ^ grid[i][j + 1];
-                        dp[i][j + 1][new_xor] = (dp[i][j + 1][new_xor] + count) % MOD;
+
+                    // Move down if within bounds
+                    if (i + 1 < n) {
+                        dp[i][j][curr] = (dp[i][j][curr] + dp[i + 1][j][newCurr]) % mod;
                     }
                 }
             }
         }
 
-        // Return the number of paths reaching (m-1, n-1) with XOR value = k
-        return dp[m - 1][n - 1][k];
+        return dp[0][0][0];
     }
 };
