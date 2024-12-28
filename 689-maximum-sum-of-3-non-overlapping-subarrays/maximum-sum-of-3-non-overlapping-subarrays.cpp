@@ -1,73 +1,53 @@
 class Solution {
 public:
     vector<int> maxSumOfThreeSubarrays(vector<int>& nums, int k) {
-        // Number of possible subarray starting positions
-        int n = nums.size() - k + 1;
+        int n = nums.size();
 
-        // Calculate sum of all possible k-length subarrays
-        vector<int> sums(n);
-        int windowSum = 0;
-        for (int i = 0; i < k; i++) {
-            windowSum += nums[i];
-        }
-        sums[0] = windowSum;
-
-        // Sliding window to calculate remaining sums
-        for (int i = k; i < nums.size(); i++) {
-            windowSum = windowSum - nums[i - k] + nums[i];
-            sums[i - k + 1] = windowSum;
+        // Step 1: Calculate prefix sums
+        // The prefixSum array allows us to calculate the sum of any subarray in O(1) time.
+        // prefixSum[i] represents the sum of the first i elements of the array.
+        vector<int> prefixSum(n + 1, 0);
+        for (int i = 1; i <= n; i++) {
+            prefixSum[i] = prefixSum[i - 1] + nums[i - 1];
         }
 
-        // memo[i][j]: max sum possible starting from index i with j subarrays
-        // remaining
-        vector<vector<int>> memo(n, vector<int>(4, -1));
-        vector<int> indices;
+        // Step 2: Initialize dynamic programming tables
+        // `bestSum[x][y]` represents the maximum sum we can achieve using `x` subarrays
+        // considering the first `y` elements of the array.
+        // `bestIndex[x][y]` stores the starting index of the last subarray that contributes
+        // to `bestSum[x][y]`.
+        vector<vector<int>> bestSum(4, vector<int>(n + 1, 0));
+        vector<vector<int>> bestIndex(4, vector<int>(n + 1, 0));
 
-        // First find optimal sum using DP
-        dp(sums, k, 0, 3, memo);
+        // Step 3: Compute the best sum and indices for 1, 2, and 3 subarrays
+        for (int subarrayCount = 1; subarrayCount <= 3; subarrayCount++) {
+            for (int endIndex = k * subarrayCount; endIndex <= n; endIndex++) {
+                // Calculate the sum of the current subarray of length `k` ending at `endIndex`.
+                int currentSum = prefixSum[endIndex] - prefixSum[endIndex - k] +
+                                 bestSum[subarrayCount - 1][endIndex - k];
 
-        // Then reconstruct the path to find indices
-        dfs(sums, k, 0, 3, memo, indices);
-
-        return indices;
-    }
-
-private:
-    // DP function to find maximum possible sum
-    int dp(vector<int>& sums, int k, int idx, int rem,
-           vector<vector<int>>& memo) {
-        if (rem == 0) return 0;
-        if (idx >= sums.size()) {
-            return rem > 0 ? INT_MIN : 0;
+                // Check if including the current subarray gives a better sum.
+                if (currentSum > bestSum[subarrayCount][endIndex - 1]) {
+                    // Update the best sum and store the starting index of the current subarray.
+                    bestSum[subarrayCount][endIndex] = currentSum;
+                    bestIndex[subarrayCount][endIndex] = endIndex - k;
+                } else {
+                    // Otherwise, carry forward the previous best sum and index.
+                    bestSum[subarrayCount][endIndex] = bestSum[subarrayCount][endIndex - 1];
+                    bestIndex[subarrayCount][endIndex] = bestIndex[subarrayCount][endIndex - 1];
+                }
+            }
         }
 
-        if (memo[idx][rem] != -1) {
-            return memo[idx][rem];
+        // Step 4: Trace back the starting indices of the three subarrays
+        vector<int> result(3, 0);
+        int currentEnd = n;  // Start from the end of the array
+        for (int subarrayIndex = 3; subarrayIndex >= 1; subarrayIndex--) {
+            // Retrieve the starting index of the last subarray contributing to the best sum
+            result[subarrayIndex - 1] = bestIndex[subarrayIndex][currentEnd];
+            currentEnd = result[subarrayIndex - 1];  // Move to the previous subarray
         }
 
-        // Try taking current subarray vs skipping it
-        int withCurrent = sums[idx] + dp(sums, k, idx + k, rem - 1, memo);
-        int skipCurrent = dp(sums, k, idx + 1, rem, memo);
-
-        memo[idx][rem] = max(withCurrent, skipCurrent);
-        return memo[idx][rem];
-    }
-
-    // DFS to reconstruct the solution path
-    void dfs(vector<int>& sums, int k, int idx, int rem,
-             vector<vector<int>>& memo, vector<int>& indices) {
-        if (rem == 0) return;
-        if (idx >= sums.size()) return;
-
-        int withCurrent = sums[idx] + dp(sums, k, idx + k, rem - 1, memo);
-        int skipCurrent = dp(sums, k, idx + 1, rem, memo);
-
-        // Choose path that gave optimal result in DP
-        if (withCurrent >= skipCurrent) {  // Take current subarray
-            indices.push_back(idx);
-            dfs(sums, k, idx + k, rem - 1, memo, indices);
-        } else {  // Skip current subarray
-            dfs(sums, k, idx + 1, rem, memo, indices);
-        }
+        return result;
     }
 };
