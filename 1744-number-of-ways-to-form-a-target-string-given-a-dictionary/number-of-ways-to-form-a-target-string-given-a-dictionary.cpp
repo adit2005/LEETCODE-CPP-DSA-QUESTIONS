@@ -14,34 +14,30 @@ public:
             }
         }
 
-        // Step 2: Initialize a DP table.
-        vector<vector<long>> dp(wordLength + 1,
-                                vector<long>(targetLength + 1, 0));
+        // Step 2: Initialize two DP arrays: prev and curr.
+        vector<long> prevCount(targetLength + 1, 0);
+        vector<long> currCount(targetLength + 1, 0);
 
         // Base case: There is one way to form an empty target string.
-        for (int currWord = 0; currWord <= wordLength; ++currWord) {
-            dp[currWord][0] = 1;
-        }
+        prevCount[0] = 1;
 
-        // Step 3: Fill the DP table.
+        // Step 3: Fill the DP arrays.
         for (int currWord = 1; currWord <= wordLength; ++currWord) {
+            // Copy the previous row into the current row for DP.
+            currCount = prevCount;
             for (int currTarget = 1; currTarget <= targetLength; ++currTarget) {
-                // Carry over the previous value (not using this index of
-                // "words").
-                dp[currWord][currTarget] = dp[currWord - 1][currTarget];
-
-                // Add ways using the current index of "words" if the characters
-                // match.
+                // If characters match, add the number of ways.
                 int curPos = target[currTarget - 1] - 'a';
-                dp[currWord][currTarget] +=
-                    (charFrequency[currWord - 1][curPos] *
-                     dp[currWord - 1][currTarget - 1]) %
-                    MOD;
-                dp[currWord][currTarget] %= MOD;
+                currCount[currTarget] += (charFrequency[currWord - 1][curPos] *
+                                          prevCount[currTarget - 1]) %
+                                         MOD;
+                currCount[currTarget] %= MOD;
             }
+            // Move current row to previous row for the next iteration.
+            prevCount = currCount;
         }
 
-        // Step 4: The result is in dp[wordLength][targetLength].
-        return dp[wordLength][targetLength];
+        // Step 4: The result is in prev[targetLength].
+        return currCount[targetLength];
     }
 };
