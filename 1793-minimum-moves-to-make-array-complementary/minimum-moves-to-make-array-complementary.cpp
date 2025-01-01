@@ -24,7 +24,7 @@ public:
             delta[lower + upper + 1] += 1;
         }
       
-        int minMoves = n; // Start with the worst case moves count
+        int minMoves = n*2; // Start with the worst case moves count
         int currentMoves = 0; // Initialize a counter for the current moves
       
         // Accumulate the delta values and find the minimum moves
