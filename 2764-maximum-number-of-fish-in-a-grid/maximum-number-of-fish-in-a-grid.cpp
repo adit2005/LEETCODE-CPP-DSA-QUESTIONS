@@ -8,22 +8,18 @@ private:
         return parent[x];
     }
 
-    // Helper function to union two components
-    void unionSet(vector<int>& parent, vector<int>& rank, vector<int>& size, int x, int y) {
+    // Helper function to union two components based on size
+    void unionSet(vector<int>& parent, vector<int>& size, int x, int y) {
         int rootX = find(parent, x);
         int rootY = find(parent, y);
 
         if (rootX != rootY) {
-            if (rank[rootX] > rank[rootY]) {
+            if (size[rootX] > size[rootY]) {
                 parent[rootY] = rootX;
                 size[rootX] += size[rootY];
-            } else if (rank[rootX] < rank[rootY]) {
+            } else {
                 parent[rootX] = rootY;
                 size[rootY] += size[rootX];
-            } else {
-                parent[rootY] = rootX;
-                size[rootX] += size[rootY];
-                rank[rootX]++;
             }
         }
     }
@@ -31,7 +27,7 @@ private:
 public:
     int findMaxFish(vector<vector<int>>& grid) {
         int m = grid.size(), n = grid[0].size();
-        vector<int> parent(m * n), rank(m * n, 0), size(m * n, 0);
+        vector<int> parent(m * n), size(m * n, 0);
 
         // Initialize parent and size arrays
         for (int i = 0; i < m; i++) {
@@ -54,7 +50,7 @@ public:
                         int ni = i + dx, nj = j + dy;
                         if (ni >= 0 && ni < m && nj >= 0 && nj < n && grid[ni][nj] > 0) {
                             int idx2 = ni * n + nj;
-                            unionSet(parent, rank, size, idx1, idx2);
+                            unionSet(parent, size, idx1, idx2);
                         }
                     }
                 }
