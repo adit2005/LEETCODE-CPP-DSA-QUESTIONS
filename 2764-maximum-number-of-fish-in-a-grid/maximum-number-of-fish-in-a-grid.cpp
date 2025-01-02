@@ -1,22 +1,73 @@
 class Solution {
-public:
-    int dir[4][2] = {{1,0}, {0,1}, {-1, 0}, {0,-1}};
-
-    int dfs(vector<vector<int>>& grid, int r, int c){
-        if(r < 0 || c < 0 || r >= grid.size() || c >= grid[0].size() || grid[r][c] == 0) return 0;
-        int res = grid[r][c];
-        grid[r][c] = 0;
-        for(auto d: dir)  res += dfs(grid, r+d[0], c+d[1]);
-        return res;
+private:
+    // Helper function to find the root of a component
+    int find(vector<int>& parent, int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent, parent[x]); // Path compression
+        }
+        return parent[x];
     }
 
-    int findMaxFish(vector<vector<int>>& grid) {
-        int ans = 0;
-        for(int i = 0; i< grid.size(); ++i){
-            for(int j =0; j < grid[0].size(); ++j){
-                ans = max(ans, dfs(grid, i, j));
+    // Helper function to union two components
+    void unionSet(vector<int>& parent, vector<int>& rank, vector<int>& size, int x, int y) {
+        int rootX = find(parent, x);
+        int rootY = find(parent, y);
+
+        if (rootX != rootY) {
+            if (rank[rootX] > rank[rootY]) {
+                parent[rootY] = rootX;
+                size[rootX] += size[rootY];
+            } else if (rank[rootX] < rank[rootY]) {
+                parent[rootX] = rootY;
+                size[rootY] += size[rootX];
+            } else {
+                parent[rootY] = rootX;
+                size[rootX] += size[rootY];
+                rank[rootX]++;
             }
         }
-        return ans;
+    }
+
+public:
+    int findMaxFish(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        vector<int> parent(m * n), rank(m * n, 0), size(m * n, 0);
+
+        // Initialize parent and size arrays
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                int idx = i * n + j;
+                if (grid[i][j] > 0) {
+                    parent[idx] = idx;
+                    size[idx] = grid[i][j];
+                }
+            }
+        }
+
+        // Union adjacent water cells
+        vector<pair<int, int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] > 0) {
+                    int idx1 = i * n + j;
+                    for (auto [dx, dy] : directions) {
+                        int ni = i + dx, nj = j + dy;
+                        if (ni >= 0 && ni < m && nj >= 0 && nj < n && grid[ni][nj] > 0) {
+                            int idx2 = ni * n + nj;
+                            unionSet(parent, rank, size, idx1, idx2);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Find the maximum fish count
+        int maxFish = 0;
+        for (int i = 0; i < m * n; i++) {
+            if (parent[i] == i) { // Root node
+                maxFish = max(maxFish, size[i]);
+            }
+        }
+        return maxFish;
     }
 };
