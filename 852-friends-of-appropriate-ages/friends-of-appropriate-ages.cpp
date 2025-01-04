@@ -1,15 +1,10 @@
 class Solution {
 public:
-  int numFriendRequests(vector<int>& ages) {
-    sort(ages.begin(), ages.end());
-    int n = ages.size(), count = 0;
-
-    for (int i = 0; i < n; ++i) {
-      int low_index = upper_bound(ages.begin(), ages.end(), (ages[i] / 2) + 7) - ages.begin();
-      int high_index = upper_bound(ages.begin(), ages.end(), ages[i]) - ages.begin();
-      count += max(high_index - low_index - 1, 0);
-    }
-
-    return count;
-  }
+   int numFriendRequests(vector<int>& ages) {
+  int a[121] = {}, res = 0;
+  for (auto age : ages) ++a[age];
+  for (auto i = 15; i <= 120; ++i)
+    for (int j = 0.5 * i + 8; j <= i; ++j) res += a[j] * (a[i] - (i == j));
+  return res;
+}
 };
