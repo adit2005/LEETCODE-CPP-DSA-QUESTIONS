@@ -1,38 +1,20 @@
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
- 
 class Solution {
 public:
-    int findTreeSum(TreeNode* root) {
+    int subtreeSum(TreeNode* root, unordered_map<int, int>& sumFreq, int& maxFreq) {
         if (!root) {
             return 0;
         }
-        // Current root's tree's sum.
-        return root -> val + findTreeSum(root -> left) + findTreeSum(root -> right);
-    }
-    
-    void preOrderTraversal(TreeNode* root, unordered_map<int, int>& sumFreq, int& maxFreq) {
-        if (!root) {
-            return;
-        }
         
-        // Find current node's tree's sum.
-        int currSum = findTreeSum(root);
+        // Get left and right subtree's sum.
+        int leftSubtreeSum = subtreeSum(root -> left, sumFreq, maxFreq);
+        int rightSubtreeSum = subtreeSum(root -> right, sumFreq, maxFreq);
+        
+        // Use the sum of subtrees to get the sum of the current tree.
+        int currSum = root -> val + leftSubtreeSum + rightSubtreeSum;
+        
         sumFreq[currSum]++;
         maxFreq = max(maxFreq, sumFreq[currSum]);
-        
-        // Iterate on left and right subtrees and find their sums.
-        preOrderTraversal(root -> left, sumFreq, maxFreq);
-        preOrderTraversal(root -> right, sumFreq, maxFreq);
+        return currSum;
     }
     
     vector<int> findFrequentTreeSum(TreeNode* root) {
@@ -40,7 +22,7 @@ public:
         int maxFreq = 0;
         
         // Traverse on all nodes one by one, and find it's tree's sum.
-        preOrderTraversal(root, sumFreq, maxFreq);
+        subtreeSum(root, sumFreq, maxFreq);
         
         vector<int> maxFreqSums;
         for(auto& it : sumFreq) {
