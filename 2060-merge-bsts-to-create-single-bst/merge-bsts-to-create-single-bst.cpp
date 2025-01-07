@@ -11,7 +11,7 @@
  */
 class Solution {
 public:
-   unordered_set<int> unique_vals;
+unordered_set<int> unique_vals;
 unordered_map<int, TreeNode*> roots;
 vector<TreeNode*> leaves;
 void addLeaf(TreeNode* r) {
@@ -42,6 +42,7 @@ TreeNode* canMerge(vector<TreeNode*>& trees) {
         leaf->right = it->second->right;
         roots.erase(it);
     }
-    return roots.size() == 1 && validNodes(begin(roots)->second) == unique_vals.size() ? begin(roots)->second : nullptr;
+   return roots.size() == 1 && validNodes(roots.begin()->second) == unique_vals.size() ? roots.begin()->second : nullptr;
+
 }
 };
