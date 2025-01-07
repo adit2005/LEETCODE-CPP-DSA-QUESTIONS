@@ -11,33 +11,37 @@
  */
 class Solution {
 public:
-    bool traverse(TreeNode* r, unordered_map<int, TreeNode*> &m, int min_left = INT_MIN, int max_right = INT_MAX) {
-    if (r == nullptr) 
-        return true;
-    if (r->val <= min_left || r->val >= max_right)
-        return false;
-    if (r->left == r->right) {
-        auto it = m.find(r->val);
-        if (it != end(m) && r != it->second) {
-            r->left = it->second->left;
-            r->right = it->second->right;
-            m.erase(it);
-        }
+   unordered_set<int> unique_vals;
+unordered_map<int, TreeNode*> roots;
+vector<TreeNode*> leaves;
+void addLeaf(TreeNode* r) {
+    if (r != nullptr) {
+        unique_vals.insert(r->val);
+        if (roots.count(r->val))
+            leaves.push_back(r);    
     }
-    return traverse(r->left, m, min_left, r->val) && traverse(r->right, m, r->val, max_right);
 }    
+int validNodes(TreeNode* r, int min_left = INT_MIN, int max_right = INT_MAX) {
+    if (r == nullptr || r->val <= min_left || r->val >= max_right) 
+        return 0;
+    return 1 + validNodes(r->left, min_left, r->val) + validNodes(r->right, r->val, max_right);
+} 
 TreeNode* canMerge(vector<TreeNode*>& trees) {
-    unordered_map<int, TreeNode*> m;
-    unordered_map<int, int> cnt;
-    for (auto &t : trees) {
-        m[t->val] = t;
-        ++cnt[t->val];
-        ++cnt[t->left ? t->left->val : 0];
-        ++cnt[t->right ? t->right->val : 0];
-    }
     for (auto &t : trees)
-        if (cnt[t->val] == 1)
-            return traverse(t, m) && m.size() == 1 ? t : nullptr;
-    return nullptr;
+        roots[t->val] = t;
+    for (auto &t : trees) {
+        unique_vals.insert(t->val);
+        addLeaf(t->left);
+        addLeaf(t->right);
+    }
+    for (auto leaf : leaves) {
+        auto it = roots.find(leaf->val);
+        if (it == end(roots)) 
+            return nullptr;
+        leaf->left = it->second->left;
+        leaf->right = it->second->right;
+        roots.erase(it);
+    }
+    return roots.size() == 1 && validNodes(begin(roots)->second) == unique_vals.size() ? begin(roots)->second : nullptr;
 }
 };
