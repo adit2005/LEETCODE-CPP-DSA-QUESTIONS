@@ -1,45 +1,31 @@
 class Solution {
 public:
-    vector<int> sessions;
-    unordered_map<string , int> dp;
-    
-    string encodeState(int pos, vector<int>& sessions) {
-        vector<int> copy = sessions;
-        sort(copy.begin(), copy.end());
-        
-        string key = to_string(pos) + "$";
-        for (int i = 0; i < copy.size(); i++)
-            key += to_string(copy[i]) + "$";
-        
-        return key;
-    }
-    
-    int solve(vector<int>& tasks, int n, int sessionTime, int pos) {
-        if (pos >= n )
-            return 0;
-        
-        string key = encodeState(pos, sessions);
-        
-        if (dp.find(key) != dp.end())
-            return dp[key];
-        
-        sessions.push_back(tasks[pos]);
-        int ans = 1 + solve(tasks, n, sessionTime, pos + 1);
-        sessions.pop_back();
-        
-        for (int i = 0; i < sessions.size();i++) {
-            if (sessions[i] + tasks[pos] <= sessionTime) {
-                sessions[i] += tasks[pos];
-                ans = min(ans, solve(tasks, n, sessionTime, pos + 1));
-                sessions[i] -= tasks[pos];
+    int dp[16385][16];
+    int f(int mask,vector<int>& tasks, int sessionTime,int curr=0){
+        if(mask==((1<<tasks.size()) - 1)){
+            return 1;
+        }
+        if(dp[mask][curr]!=-1){
+            return dp[mask][curr];
+        }
+        int ans=1e9;
+        for(int i=0;i<tasks.size();i++)
+        {
+            if(!((1<<i) & (mask))){
+                if(curr+tasks[i]<=sessionTime){
+                    ans=min(ans,f((mask | (1<<i)),tasks,sessionTime,curr+tasks[i]));
+                }
+                else{
+                    ans=min(ans,1+f((mask | (1<<i)),tasks,sessionTime,tasks[i]));
+                }
             }
         }
-        
-        return dp[key] = ans;
+        return dp[mask][curr]=ans;
     }
-    
     int minSessions(vector<int>& tasks, int sessionTime) {
-        int n = tasks.size();
-        return solve(tasks, n, sessionTime, 0);
+        int mask=0;
+        memset(dp,-1,sizeof(dp));
+        int ans= f(mask,tasks,sessionTime);
+        return ans;
     }
 };
