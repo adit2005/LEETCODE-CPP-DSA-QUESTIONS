@@ -1,52 +1,94 @@
+#include <vector>
+#include <algorithm>
+#include <unordered_set>
+#include <map>
+
+using namespace std;
+
+class DSU {
+    vector<int> parent, rank;
+public:
+    DSU(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        for (int i = 0; i < n; ++i) parent[i] = i;
+    }
+    
+    int find(int x) {
+        if (x != parent[x]) 
+            parent[x] = find(parent[x]);
+        return parent[x];
+    }
+    
+    void unite(int x, int y) {
+        int px = find(x), py = find(y);
+        if (px != py) {
+            if (rank[px] < rank[py]) {
+                parent[px] = py;
+            } else if (rank[px] > rank[py]) {
+                parent[py] = px;
+            } else {
+                parent[py] = px;
+                rank[px]++;
+            }
+        }
+    }
+    
+    void reset(int x) {
+        parent[x] = x;
+    }
+    
+    bool connected(int x, int y) {
+        return find(x) == find(y);
+    }
+};
+
 class Solution {
 public:
-    vector<int> findAllPeople(int n, vector<vector<int>>& meetings, int firstPerson) { 
-		// create the graph betwen the persons
-        vector<vector<pair<int,int>>> graph(n);
-        for(int i = 0; i < meetings.size(); ++i){
-            graph[meetings[i][0]].push_back({meetings[i][1],meetings[i][2]});
-            graph[meetings[i][1]].push_back({meetings[i][0],meetings[i][2]});
-        }
+    vector<int> findAllPeople(int n, vector<vector<int>>& meetings, int firstPerson) {
+        // Sort meetings by time
+        sort(meetings.begin(), meetings.end(), [](const vector<int>& a, const vector<int>& b) {
+            return a[2] < b[2];
+        });
 
-		// using min heap , using time as the sort order key.   
-        priority_queue<pair<int,int> , vector<pair<int,int> > , greater<pair<int,int>> > q;
-		
-		// Add both 0 and firstPerson in the queue as they know the secret initially at time 0 
-        q.push({0, firstPerson});
-        q.push({0, 0});
-		//  vector to store res  
-        vector<int> res;
-		
-		// marking the persons as visited if they have met and shared the secret to all possible persons they could 
-        vector<bool> visited(n,false);
-        
-        while(!q.empty()){
-            pair<int,int> curr = q.top();
-            q.pop();
+        DSU dsu(n);
+        dsu.unite(0, firstPerson); // Person 0 shares the secret with firstPerson at time 0
+
+        int i = 0;
+        while (i < meetings.size()) {
+            int currentTime = meetings[i][2];
+            vector<pair<int, int>> currentMeetings;
             
-            int person = curr.second;
-            int time = curr.first;
-			
-			// person had already shared the secret with others
-            if(visited[person]) {
-                continue;
+            // Gather all meetings happening at the current time
+            while (i < meetings.size() && meetings[i][2] == currentTime) {
+                currentMeetings.push_back({meetings[i][0], meetings[i][1]});
+                i++;
             }
-            visited[person] = true;
-			
-			//iterate all the meetings of this person and add the potential new persons he can share secret with 
-            for(pair<int,int> neigh : graph[person]){
-                if(!visited[neigh.first] && time <= neigh.second){
-                    q.push({neigh.second,neigh.first});
+            
+            // Unite all people meeting at the current time
+            unordered_set<int> participants;
+            for (const auto& meeting : currentMeetings) {
+                dsu.unite(meeting.first, meeting.second);
+                participants.insert(meeting.first);
+                participants.insert(meeting.second);
+            }
+            
+            // Check which participants are connected to person 0
+            for (int person : participants) {
+                if (!dsu.connected(0, person)) {
+                    dsu.reset(person);
                 }
             }
         }
         
-		// all visited persons know the secret
-        for(int i = 0; i < n ; ++i ){
-            if(visited[i]){
-                res.push_back(i);        
+        // Collect all people connected to person 0
+        vector<int> result;
+        for (int person = 0; person < n; ++person) {
+            if (dsu.connected(0, person)) {
+                result.push_back(person);
             }
         }
-        return res;
+        
+        return result;
     }
 };
