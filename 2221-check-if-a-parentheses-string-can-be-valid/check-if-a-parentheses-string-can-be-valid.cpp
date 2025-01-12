@@ -1,38 +1,42 @@
 class Solution {
 public:
     bool canBeValid(string s, string locked) {
-        int n = s.size();
-        if(n&1)
+        int length = s.size();
+        // If length of string is odd, return false.
+        if (length % 2 == 1) {
             return false;
-        int lftbrak = 0, rhtbrak = 0;
-        for(int i = 0; i < n; i++)
-        {
-            if(locked[i] == '1')
-            {
-                if(s[i] == ')')
-                    lftbrak--;
-                else
-                    lftbrak++;
-            }
-            else
-                lftbrak++;
-            if(lftbrak < 0)
-                return false;
         }
-        for(int i = n-1; i >= 0; i--)
-        {
-            if(locked[i] == '1')
-            {
-                if(s[i] == '(')
-                    rhtbrak--;
-                else
-                    rhtbrak++;
+
+        stack<int> openBrackets, unlocked;
+
+        // Iterate through the string to handle '(' and ')'
+        for (int i = 0; i < length; i++) {
+            if (locked[i] == '0') {
+                unlocked.push(i);
+            } else if (s[i] == '(') {
+                openBrackets.push(i);
+            } else if (s[i] == ')') {
+                if (!openBrackets.empty()) {
+                    openBrackets.pop();
+                } else if (!unlocked.empty()) {
+                    unlocked.pop();
+                } else {
+                    return false;
+                }
             }
-            else
-                rhtbrak++;
-            if(rhtbrak < 0)
-                return false;
         }
+
+        // Match remaining open brackets with unlocked characters
+        while (!openBrackets.empty() && !unlocked.empty() &&
+               openBrackets.top() < unlocked.top()) {
+            openBrackets.pop();
+            unlocked.pop();
+        }
+
+        if (!openBrackets.empty()) {
+            return false;
+        }
+
         return true;
     }
 };
