@@ -1,26 +1,27 @@
 class Solution {
 public:
     int minimumLength(string s) {
-        // Step 1: Count the frequency of each character in the string
-        unordered_map<char, int> charFrequencyMap;
+        // Step 1: Initialize a frequency array to count occurrences of each
+        // character
+        vector<int> charFrequency(26, 0);
+        int totalLength = 0;
+
+        // Step 2: Count the frequency of each character in the string
         for (char currentChar : s) {
-            charFrequencyMap[currentChar]++;
+            charFrequency[currentChar - 'a']++;
         }
 
-        // Step 2: Calculate the number of characters to delete
-        int deleteCount = 0;
-        for (auto& pair : charFrequencyMap) {
-            int frequency = pair.second;
-            if (frequency % 2 == 1) {
-                // If frequency is odd, delete all except one
-                deleteCount += frequency - 1;
+        // Step 3: Calculate the total length after deletions count
+        for (int frequency : charFrequency) {
+            if (frequency == 0) continue;  // Skip characters that don't appear
+            if (frequency % 2 == 0) {
+                totalLength += 2;  // If frequency is even, add 2
             } else {
-                // If frequency is even, delete all except two
-                deleteCount += frequency - 2;
+                totalLength += 1;  // If frequency is odd, add 1
             }
         }
 
-        // Step 3: Return the minimum length after deletions
-        return s.length() - deleteCount;
+        // Step 4: Return the minimum length after deletions count
+        return totalLength;
     }
 };
