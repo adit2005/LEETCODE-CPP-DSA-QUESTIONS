@@ -1,61 +1,72 @@
 #include <unordered_set>
-#include <queue>
 #include <vector>
 using namespace std;
 
 class Solution {
 public:
-    // Function to check if escape is possible using BFS
+    // Function to check if escape is possible
     bool isEscapePossible(vector<vector<int>>& blocked, vector<int>& source, vector<int>& target) {
+        // Sets for visited cells and blocked cells, using hashed values
+        unordered_set<long long> visited;
         unordered_set<long long> blockedSet;
-        for (const auto& p : blocked) {
-            blockedSet.insert(hashPoint(p[0], p[1]));
+
+        // Insert all blocked cells into the set
+        for (const auto& cell : blocked) {
+            blockedSet.insert(hashPoint(cell[0], cell[1]));
         }
-        return bfs(source, target, blockedSet) && bfs(target, source, blockedSet);
+
+        // Perform DFS from source to target and target to source
+        bool fromSource = dfs(visited, blockedSet, source[0], source[1], target[0], target[1]);
+        visited.clear(); // Clear visited set for the second DFS
+        bool fromTarget = dfs(visited, blockedSet, target[0], target[1], source[0], source[1]);
+
+        return fromSource && fromTarget;
     }
 
 private:
-    // BFS function
-    bool bfs(vector<int>& start, vector<int>& end, unordered_set<long long>& blockedSet) {
-        queue<pair<int, int>> q;
-        unordered_set<long long> visited;
-        q.push({start[0], start[1]});
-        visited.insert(hashPoint(start[0], start[1]));
+    // Function to hash a 2D point into a single integer
+    long long hashPoint(int x, int y) {
+        return (static_cast<long long>(x) << 32) | y;
+    }
 
-        vector<vector<int>> directions = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-        const int LIMIT = 20000; // Early stopping condition
+    // DFS function to traverse the grid
+    bool dfs(unordered_set<long long>& visited, unordered_set<long long>& blockedSet,
+             int x, int y, int targetX, int targetY) {
+        // Directions: right, left, up, down
+        int dx[] = {1, -1, 0, 0};
+        int dy[] = {0, 0, 1, -1};
 
-        while (!q.empty()) {
-            auto [x, y] = q.front();
-            q.pop();
+        // Mark the current cell as visited
+        visited.insert(hashPoint(x, y));
 
-            // Check all 4 possible directions
-            for (const auto& dir : directions) {
-                int nx = x + dir[0], ny = y + dir[1];
-                long long hashedPoint = hashPoint(nx, ny);
+        // Early stopping condition: if visited size exceeds 20000
+        if (visited.size() >= 20000) {
+            return true;
+        }
 
-                // Check bounds, visited set, and blocked set
-                if (nx >= 0 && nx < 1'000'000 && ny >= 0 && ny < 1'000'000 &&
-                    !visited.count(hashedPoint) && !blockedSet.count(hashedPoint)) {
-                    if (nx == end[0] && ny == end[1]) {
-                        return true; // Target reached
-                    }
-                    q.push({nx, ny});
-                    visited.insert(hashedPoint);
+        // If the target cell is reached
+        if (x == targetX && y == targetY) {
+            return true;
+        }
+
+        // Explore all 4 directions
+        for (int i = 0; i < 4; i++) {
+            int newX = x + dx[i];
+            int newY = y + dy[i];
+            long long hashedNewPoint = hashPoint(newX, newY);
+
+            // Check bounds, if the cell is visited or blocked
+            if (newX >= 0 && newY >= 0 && newX < 1'000'000 && newY < 1'000'000 &&
+                visited.find(hashedNewPoint) == visited.end() &&
+                blockedSet.find(hashedNewPoint) == blockedSet.end()) {
+                
+                // Recur for the next cell
+                if (dfs(visited, blockedSet, newX, newY, targetX, targetY)) {
+                    return true;
                 }
-            }
-
-            // If visited size exceeds LIMIT, return true (early escape detection)
-            if (visited.size() >= LIMIT) {
-                return true;
             }
         }
 
         return false;
-    }
-
-    // Function to hash a 2D point into a single integer for use in sets
-    long long hashPoint(int x, int y) {
-        return (static_cast<long long>(x) << 32) | y;
     }
 };
