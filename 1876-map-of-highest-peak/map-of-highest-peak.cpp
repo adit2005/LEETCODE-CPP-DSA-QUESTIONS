@@ -1,64 +1,91 @@
 class Solution {
 public:
     vector<vector<int>> highestPeak(vector<vector<int>>& isWater) {
-        int dx[4] = {0, 0, 1,
-                     -1};  // Horizontal movement: right, left, down, up
-        int dy[4] = {1, -1, 0, 0};  // Vertical movement corresponding to dx
-
         int rows = isWater.size();
         int columns = isWater[0].size();
+        // Large value to represent uninitialized heights
+        const int INF = rows * columns;
 
-        // Initialize the height matrix with -1 (unprocessed cells)
-        vector<vector<int>> cellHeights(rows, vector<int>(columns, -1));
+        // Initialize the cellHeights matrix with INF (unprocessed cells)
+        vector<vector<int>> cellHeights(rows, vector<int>(columns, INF));
 
-        queue<pair<int, int>> cellQueue;
-
-        // Add all water cells to the queue and set their height to 0
-        for (int x = 0; x < rows; x++) {
-            for (int y = 0; y < columns; y++) {
-                if (isWater[x][y]) {
-                    cellQueue.push({x, y});
-                    cellHeights[x][y] = 0;
+        // Set the height of water cells to 0
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                if (isWater[row][col]) {
+                    cellHeights[row][col] = 0;  // Water cells have height 0
                 }
             }
         }
 
-        // Initial height for land cells adjacent to water
-        int heightOfNextLayer = 1;
+        // Forward pass: updating heights based on top and left neighbors
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                // Initialize minimum neighbor distance
+                int minNeighborDistance = INF;
 
-        while (!cellQueue.empty()) {
-            int layerSize = cellQueue.size();
-
-            // Iterate through all cells in the current layer
-            for (int i = 0; i < layerSize; i++) {
-                pair<int, int> currentCell = cellQueue.front();
-                cellQueue.pop();
-
-                // Check all four possible directions for neighboring cells
-                for (int d = 0; d < 4; d++) {
-                    pair<int, int> neighborCell = {currentCell.first + dx[d],
-                                                   currentCell.second + dy[d]};
-
-                    // Check if the neighbor is valid and unprocessed
-                    if (isValidCell(neighborCell, rows, columns) &&
-                        cellHeights[neighborCell.first][neighborCell.second] ==
-                            -1) {
-                        cellHeights[neighborCell.first][neighborCell.second] =
-                            heightOfNextLayer;
-                        cellQueue.push(neighborCell);
-                    }
+                // Check the cell above
+                int neighborRow = row - 1;
+                int neighborCol = col;
+                if (isValidCell(neighborRow, neighborCol, rows, columns)) {
+                    minNeighborDistance =
+                        min(minNeighborDistance,
+                            cellHeights[neighborRow][neighborCol]);
                 }
+
+                // Check the cell to the left
+                neighborRow = row;
+                neighborCol = col - 1;
+                if (isValidCell(neighborRow, neighborCol, rows, columns)) {
+                    minNeighborDistance =
+                        min(minNeighborDistance,
+                            cellHeights[neighborRow][neighborCol]);
+                }
+
+                // Set the current cell's height as the minimum of its neighbors
+                // + 1
+                cellHeights[row][col] =
+                    min(cellHeights[row][col], minNeighborDistance + 1);
             }
-            heightOfNextLayer++;  // Increment height for the next layer
         }
 
-        return cellHeights;
+        // Backward pass: updating heights based on bottom and right neighbors
+        for (int row = rows - 1; row >= 0; row--) {
+            for (int col = columns - 1; col >= 0; col--) {
+                // Initialize minimum neighbor distance
+                int minNeighborDistance = INF;
+
+                // Check the cell below
+                int neighborRow = row + 1;
+                int neighborCol = col;
+                if (isValidCell(neighborRow, neighborCol, rows, columns)) {
+                    minNeighborDistance =
+                        min(minNeighborDistance,
+                            cellHeights[neighborRow][neighborCol]);
+                }
+
+                // Check the cell to the right
+                neighborRow = row;
+                neighborCol = col + 1;
+                if (isValidCell(neighborRow, neighborCol, rows, columns)) {
+                    minNeighborDistance =
+                        min(minNeighborDistance,
+                            cellHeights[neighborRow][neighborCol]);
+                }
+
+                // Set the current cell's height as the minimum of its neighbors
+                // + 1
+                cellHeights[row][col] =
+                    min(cellHeights[row][col], minNeighborDistance + 1);
+            }
+        }
+
+        return cellHeights;  // Return the calculated cell heights
     }
 
 private:
-    // Function to check if a cell is within the grid boundaries
-    bool isValidCell(pair<int, int> cell, int rows, int columns) {
-        return cell.first >= 0 && cell.second >= 0 && cell.first < rows &&
-               cell.second < columns;
+    // Function to check if a cell is within grid bounds
+    bool isValidCell(int row, int col, int rows, int columns) {
+        return row >= 0 && col >= 0 && row < rows && col < columns;
     }
 };
