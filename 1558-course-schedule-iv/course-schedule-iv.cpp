@@ -3,43 +3,28 @@ public:
     vector<bool> checkIfPrerequisite(int numCourses,
                                      vector<vector<int>>& prerequisites,
                                      vector<vector<int>>& queries) {
-        unordered_map<int, vector<int>> adjList;
-        vector<int> indegree(numCourses, 0);
+        vector<vector<bool>> isPrerequisite(numCourses,
+                                            vector<bool>(numCourses, false));
         for (auto edge : prerequisites) {
-            adjList[edge[0]].push_back(edge[1]);
-            indegree[edge[1]]++;
+            isPrerequisite[edge[0]][edge[1]] = true;
         }
 
-        queue<int> q;
-        for (int i = 0; i < numCourses; i++) {
-            if (!indegree[i]) {
-                q.push(i);
-            }
-        }
-
-        // Map from the node as key to the set of prerequisite nodes.
-        unordered_map<int, unordered_set<int>> nodePrerequisites;
-        while (!q.empty()) {
-            int node = q.front();
-            q.pop();
-
-            for (auto adj : adjList[node]) {
-                // Add node and prerequisite of node to the prerequisites of adj
-                nodePrerequisites[adj].insert(node);
-                for (auto prereq : nodePrerequisites[node]) {
-                    nodePrerequisites[adj].insert(prereq);
-                }
-
-                indegree[adj]--;
-                if (!indegree[adj]) {
-                    q.push(adj);
+        for (int intermediate = 0; intermediate < numCourses; intermediate++) {
+            for (int src = 0; src < numCourses; src++) {
+                for (int target = 0; target < numCourses; target++) {
+                    // If src -> intermediate & intermediate -> target exists
+                    // then src -> target will also exist.
+                    isPrerequisite[src][target] =
+                        isPrerequisite[src][target] ||
+                        (isPrerequisite[src][intermediate] &&
+                         isPrerequisite[intermediate][target]);
                 }
             }
         }
 
         vector<bool> answer;
         for (auto q : queries) {
-            answer.push_back(nodePrerequisites[q[1]].contains(q[0]));
+            answer.push_back(isPrerequisite[q[0]][q[1]]);
         }
 
         return answer;
