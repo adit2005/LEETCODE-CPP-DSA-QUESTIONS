@@ -19,21 +19,20 @@ public:
 class Solution {
 public:
     Node* connect(Node* root) {
-        if (!root)
-            return nullptr;
-        auto L = root->left, R = root->right, N = root->next;
-        if (L) {
-            L->next = R; // next of root's left is assigned as root's right
-            if (N){
-                 R->next = N->left; 
-            }
-            else{
-                R->next = nullptr;
-            }
-              
-            connect(L);            
-            connect(R);            
-        }
-        return root;
+        auto head = root;
+        for (; root; root = root->left)
+            for (auto cur = root; cur;
+                 cur = cur->next) // traverse each level - it's just BFS taking
+                                  // advantage of next pointers
+                if (cur->left) {  // update next pointers of children if they
+                                  // exist
+                    cur->left->next = cur->right;
+                    if (cur->next)
+                        cur->right->next = cur->next->left;
+                } else
+                    break; // if no children exist, stop iteration
+
+        return head;
     }
 };
+
