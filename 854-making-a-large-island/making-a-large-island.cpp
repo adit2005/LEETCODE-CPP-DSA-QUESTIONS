@@ -1,105 +1,98 @@
-class DisjointSet {  
-public:
-    vector<int> rank, parent, size;
-
-    // Constructor initializes the DisjointSet with n elements.
-    DisjointSet(int n) {
-        rank.resize(n+1, 0); 
-        parent.resize(n+1);
-        size.resize(n+1); 
-
-        // Initially, each node is its own parent, and size is 1.
-        for(int i = 0; i <= n; i++) {
-            parent[i] = i; 
-            size[i] = 1; 
-        }
-    }
-
-    // Find the ultimate parent (with path compression).
-    int findUPar(int node) {
-        if(node == parent[node])
-            return node; 
-        return parent[node] = findUPar(parent[node]); 
-    }
-
-    // Union by size, merging smaller set into the larger one.
-    void unionBySize(int u, int v) {
-        int ulp_u = findUPar(u); 
-        int ulp_v = findUPar(v); 
-
-        if(ulp_u == ulp_v) return; // They are already in the same set.
-        
-        // Union by size: attach smaller tree under larger tree.
-        if(size[ulp_u] < size[ulp_v]) {
-            parent[ulp_u] = ulp_v; 
-            size[ulp_v] += size[ulp_u]; 
-        } else {
-            parent[ulp_v] = ulp_u;
-            size[ulp_u] += size[ulp_v]; 
-        }
-    }
-};
-
 class Solution {
+private:
+    int exploreIsland(vector<vector<int>>& grid, int islandId, int currentRow,
+                      int currentColumn) {
+        if (currentRow < 0 || currentRow >= grid.size() || currentColumn < 0 ||
+            currentColumn >= grid[0].size() ||
+            grid[currentRow][currentColumn] != 1)
+            return 0;
+
+        grid[currentRow][currentColumn] = islandId;
+        return 1 +
+               exploreIsland(grid, islandId, currentRow + 1, currentColumn) +
+               exploreIsland(grid, islandId, currentRow - 1, currentColumn) +
+               exploreIsland(grid, islandId, currentRow, currentColumn + 1) +
+               exploreIsland(grid, islandId, currentRow, currentColumn - 1);
+    }
+
 public:
     int largestIsland(vector<vector<int>>& grid) {
-        int n = grid.size();
-        DisjointSet ds(n * n); // Disjoint set for n*n grid elements.
+        unordered_map<int, int> islandSizes;
+        int islandId = 2;
 
-        // Directions for exploring neighbors: up, right, down, left.
-        vector<int> dr = {-1, 0, 1, 0};
-        vector<int> dc = {0, 1, 0, -1};
-
-        // Step 1: Union all adjacent '1's.
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                if(grid[i][j] == 1) {
-                    for(int k = 0; k < 4; k++) { // Check all four directions.
-                        int nr = i + dr[k]; // Neighbor row.
-                        int nc = j + dc[k]; // Neighbor column.
-
-                        // Check if neighbor is within bounds and is '1'.
-                        if(nr >= 0 && nr < n && nc >= 0 && nc < n && grid[nr][nc] == 1) {
-                            int nodeno = n * i + j; // Current node number.
-                            int adjno = n * nr + nc; // Adjacent node number.
-                            ds.unionBySize(adjno, nodeno); // Union the two nodes.
-                        }
-                    }
+        // Step 1: Mark all islands and calculate their sizes
+        for (int currentRow = 0; currentRow < grid.size(); ++currentRow) {
+            for (int currentColumn = 0; currentColumn < grid[0].size();
+                 ++currentColumn) {
+                if (grid[currentRow][currentColumn] == 1) {
+                    islandSizes[islandId] = exploreIsland(
+                        grid, islandId, currentRow, currentColumn);
+                    ++islandId;
                 }
             }
         }
 
-        // // Step 2: Find the maximum component size.
-         int ans = 1; // At least one land is possible.
-        for(int i = 0; i < n * n; i++) {
-            ans = max(ans, ds.size[i]); // Find the largest component size.
+        // If there are no islands, return 1
+        if (islandSizes.empty()) {
+            return 1;
+        }
+        // If the entire grid is one island, return its size or size + 1
+        if (islandSizes.size() == 1) {
+            --islandId;
+            return (islandSizes[islandId] == grid.size() * grid[0].size())
+                       ? islandSizes[islandId]
+                       : islandSizes[islandId] + 1;
         }
 
-        // Step 3: Try converting each '0' to '1' and calculate the potential island size.
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                if(grid[i][j] == 0) {
-                    unordered_set<int> st; // To store unique component representatives.
-                    for(int k = 0; k < 4; k++) { // Check all four directions.
-                        int nr = i + dr[k];
-                        int nc = j + dc[k];
+        int maxIslandSize = 1;
 
-                        // Check if neighbor is within bounds and is '1'.
-                        if(nr >= 0 && nr < n && nc >= 0 && nc < n && grid[nr][nc] == 1) {
-                            int adjno = n * nr + nc;
-                            st.insert(ds.findUPar(adjno)); // Insert the component representative.
-                        }
+        // Step 2: Try converting every 0 to 1 and calculate the resulting
+        // island size
+        for (int currentRow = 0; currentRow < grid.size(); ++currentRow) {
+            for (int currentColumn = 0; currentColumn < grid[0].size();
+                 ++currentColumn) {
+                if (grid[currentRow][currentColumn] == 0) {
+                    int currentIslandSize = 1;
+                    unordered_set<int> neighboringIslands;
+
+                    // Check down
+                    if (currentRow + 1 < grid.size() &&
+                        grid[currentRow + 1][currentColumn] > 1) {
+                        neighboringIslands.insert(
+                            grid[currentRow + 1][currentColumn]);
                     }
 
-                    int temps = 1; // Start with size 1 (the flipped '0' itself).
-                    for(auto it: st) {
-                        temps += ds.size[it]; // Add sizes of all unique neighboring components.
+                    // Check up
+                    if (currentRow - 1 >= 0 &&
+                        grid[currentRow - 1][currentColumn] > 1) {
+                        neighboringIslands.insert(
+                            grid[currentRow - 1][currentColumn]);
                     }
-                    ans = max(ans, temps); // Update maximum possible island size.
+
+                    // Check right
+                    if (currentColumn + 1 < grid[0].size() &&
+                        grid[currentRow][currentColumn + 1] > 1) {
+                        neighboringIslands.insert(
+                            grid[currentRow][currentColumn + 1]);
+                    }
+
+                    // Check left
+                    if (currentColumn - 1 >= 0 &&
+                        grid[currentRow][currentColumn - 1] > 1) {
+                        neighboringIslands.insert(
+                            grid[currentRow][currentColumn - 1]);
+                    }
+
+                    // Sum the sizes of all unique neighboring islands
+                    for (int id : neighboringIslands) {
+                        currentIslandSize += islandSizes[id];
+                    }
+
+                    maxIslandSize = max(maxIslandSize, currentIslandSize);
                 }
             }
         }
 
-        return ans; // Return the largest possible island size.
+        return maxIslandSize;
     }
 };
