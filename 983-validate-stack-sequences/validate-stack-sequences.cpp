@@ -1,19 +1,16 @@
 class Solution {
 public:
     bool validateStackSequences(vector<int>& pushed, vector<int>& popped) {
-        stack<int> st; // Create a stack
-
+        int i = 0; // Intialise one pointer pointing on pushed array
         int j = 0; // Intialise one pointer pointing on popped array
-
-        for (auto val : pushed) {
-            st.push(val); // insert the values in stack
-            while (st.size() > 0 &&
-                   st.top() ==
-                       popped[j]) { // if st.peek() values equal to popped[j];
-                st.pop();           // then pop out
-                j++;                // increment j
+        
+        for(auto val : pushed){
+            pushed[i++] = val; // using pushed as the stack.
+            while(i > 0 && pushed[i - 1] == popped[j]){ // pushed[i - 1] values equal to popped[j];
+                i--; // decrement i
+                j++; // increment j
             }
         }
-        return st.size() == 0; // check if stack is empty return true else false
+        return i == 0; // Since pushed is a permutation of popped so at the end we are supposed to be left with an empty stack
     }
 };
