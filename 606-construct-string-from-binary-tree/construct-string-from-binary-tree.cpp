@@ -13,26 +13,53 @@
 
 class Solution {
 public:
-    static string tree2str(const TreeNode* root) {
-        string ans;
-        tree2Str(root, ans);
-        return ans;
-    }
-    static void tree2Str(const TreeNode* node, string& ans) {
-        if (!node)
-            return;
-        ans += to_string(node->val);
-        if (node->left) { // left side check
-            ans += '(';
-            tree2Str(node->left, ans);
-            ans += ')';
+    string tree2str(TreeNode* root) {
+        // Check if the tree is empty
+        if (!root)
+            return "";
+
+        // Initialize an empty result string
+        string res;
+        // Initialize a stack for iterative traversal
+        stack<TreeNode*> st;
+        // Use a set to track visited nodes
+        unordered_set<TreeNode*> visited;
+        // Push the root onto the stack
+        st.push(root);
+
+        // Iterate through the tree using a stack
+        while (!st.empty()) {
+            // Get the current node from the top of the stack
+            TreeNode* cur = st.top();
+
+            // If the current node is already visited, pop it from the stack and
+            // close the parenthesis
+            if (visited.count(cur)) {
+                st.pop();
+                res += ")";
+            } else {
+                // If the current node is not visited, mark it as visited and
+                // add its value to the result
+                visited.insert(cur);
+                res += "(" + to_string(cur->val);
+
+                // If the current node has no left child and a right child, add
+                // an empty pair of parentheses
+                if (!cur->left && cur->right) {
+                    res += "()";
+                }
+
+                // Add the right child to the stack if it exists
+                if (cur->right)
+                    st.push(cur->right);
+
+                // Add the left child to the stack if it exists
+                if (cur->left)
+                    st.push(cur->left);
+            }
         }
-        if (node->right) { // right side check
-            if (!node->left)
-                ans += "()"; // left side not present, but right side present
-            ans += '(';
-            tree2Str(node->right, ans);
-            ans += ')';
-        }
+
+        // Return the result string with leading '(' and trailing ')' removed
+        return res.substr(1, res.length() - 2);
     }
 };
