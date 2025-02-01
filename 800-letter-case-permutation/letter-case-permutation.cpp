@@ -1,32 +1,33 @@
 class Solution {
-    // Helper function for backtracking
-    void backtrack(string& s, int i, vector<string>& res) {
-        // If we have processed all characters, store the current permutation
-        if (i == s.size()) {
-            res.push_back(s);
+public:
+    vector<string>ans;
+    void solve(string curr,string s, int i){
+        // if end of the string is reached
+        if(i==s.length()){
+            ans.push_back(curr); // push the current "curr" string to ans
             return;
         }
-
-        // Recursive call without changing the current character
-        backtrack(s, i + 1, res);
-
-        // If the current character is a letter, toggle its case and recurse
-        if (isalpha(s[i])) {
-            // Toggle case using bitwise XOR (1 << 5) flips the 6th bit,
-            // which converts uppercase to lowercase and vice versa.
-            s[i] ^= (1 << 5);
+        
+        if(isdigit(s[i])){ // case 1
+            curr.push_back(s[i]);
+            solve(curr,s,i+1);
+        }
+        else{ // case 2
+            //sub case 1, considering lower case
+            string c1=curr;
+            c1.push_back(tolower(s[i]));
+            solve(c1,s,i+1);
             
-            // Recursive call with the toggled case character
-            backtrack(s, i + 1, res);
-
-          
+            //sub case 2, considering upper case
+            string c2=curr;
+            c2.push_back(toupper(s[i]));
+            solve(c2,s,i+1);
         }
     }
-
-public:
+    
     vector<string> letterCasePermutation(string S) {
-        vector<string> res;
-        backtrack(S, 0, res); // Start backtracking from index 0
-        return res;
+        ans.clear();
+        solve("",S,0);
+        return ans;
     }
 };
