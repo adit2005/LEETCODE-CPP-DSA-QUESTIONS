@@ -1,32 +1,22 @@
 class Solution {
 public:
-    vector<vector<int>>dp;
-    int fn(int ind,vector<int>&arr,int segment,int k) 
-    {
-        if(segment==0)
-            return 0;
-        if(ind>=arr.size())
-            return 0;
-        if(dp[ind][segment]!=-1)
-            return dp[ind][segment];
-        
-        int non_pick=fn(ind+1,arr,segment,k); 
-        int target=lower_bound(arr.begin(),arr.end(),arr[ind]+k+1)-arr.begin();
-        int pick=target-ind; 
-        
-        pick+=fn(target,arr,segment-1,k);
-        
-        return dp[ind][segment]= max(non_pick,pick);
-        
-        
-    }
-        
-    int maximizeWin(vector<int>& arr, int k) {
-        int n=arr.size();
-        dp.resize(n,vector<int>(3,-1));
-        
-        return fn(0,arr,2,k);
-        
-        
+    int maximizeWin(vector<int>& A, int k) {
+        int res = 0, n = A.size(), j = 0;
+        vector<int> dp(n + 1,
+                       0); // dp[i] stores the max segment length up to index i
+
+        for (int i = 0; i < n; ++i) {
+            // Move `j` forward until A[i] - A[j] <= k (ensuring valid segment)
+            while (A[j] < A[i] - k)
+                ++j;
+
+            // Compute the maximum segment length ending at `i`
+            dp[i + 1] = max(dp[i], i - j + 1);
+
+            // Update the result: sum of current valid segment + best previous
+            // non-overlapping segment
+            res = max(res, i - j + 1 + dp[j]);
+        }
+        return res;
     }
 };
