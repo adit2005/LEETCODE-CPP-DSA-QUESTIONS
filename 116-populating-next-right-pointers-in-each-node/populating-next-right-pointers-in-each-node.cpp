@@ -19,20 +19,26 @@ public:
 class Solution {
 public:
     Node* connect(Node* root) {
-        auto head = root;
-        for (; root; root = root->left)
-            for (auto cur = root; cur;
-                 cur = cur->next) // traverse each level - it's just BFS taking
-                                  // advantage of next pointers
-                if (cur->left) {  // update next pointers of children if they
-                                  // exist
-                    cur->left->next = cur->right;
-                    if (cur->next)
-                        cur->right->next = cur->next->left;
-                } else
-                    break; // if no children exist, stop iteration
+        if (!root)
+            return nullptr;
+        queue<Node*> q;
+        q.push(root);
+        while (size(q)) {
+            Node* rightNode = nullptr;      // set rightNode to null initially
+            for (int i = size(q); i; i--) { // traversing each level
+                auto cur = q.front();
+                q.pop();               // pop a node from current level and,
+                cur->next = rightNode; // set its next pointer to rightNode
+                rightNode = cur; // update rightNode as cur for next iteration
+                if (cur->right) {
+                    q.push(cur->right);
+                }
 
-        return head;
+                if(cur->left){
+                     q.push(cur->left);
+                }
+            }
+        }
+        return root;
     }
 };
-
