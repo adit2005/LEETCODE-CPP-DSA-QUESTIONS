@@ -1,31 +1,30 @@
 class Solution {
 public:
     int longestPalindrome(string s) {
-        // Map to store frequency of occurrence of each character
+        int oddFreqCharsCount = 0;
         unordered_map<char, int> frequencyMap;
-        // Count frequencies
-        for (char c : s) {
-            frequencyMap[c]++;
-        }
 
-        int res = 0;
-        bool hasOddFrequency = false;
-        for (auto& entry : frequencyMap) {
-            int freq = entry.second;
-            // Check if the frequency is even
-            if (freq % 2 == 0) {
-                res += freq;
+        // Loop over the string
+        for (char c : s) {
+            // Update count of current character
+            frequencyMap[c]++;
+
+            // If the current freq of the character is odd,
+            // increment oddCount
+            if ((frequencyMap[c] % 2) == 1) {
+                oddFreqCharsCount++;
             } else {
-                // If the frequency is odd, one occurrence of the
-                // character will remain without a match
-                res += freq - 1;
-                hasOddFrequency = true;
+                oddFreqCharsCount--;
             }
         }
-        // If hasOddFrequency is true, we have at least one unmatched
-        // character to make the center of an odd length palindrome.
-        if (hasOddFrequency) return res + 1;
 
-        return res;
+        // If there are characters with odd frequencies, we are
+        // guaranteed to have at least one letter left unmatched,
+        // which can make the center of an odd length palindrome.
+        if (oddFreqCharsCount > 0) {
+            return s.length() - oddFreqCharsCount + 1;
+        } else {
+            return s.length();
+        }
     }
 };
