@@ -1,39 +1,13 @@
 class Solution {
 public:
-    int countWaysUtil(int m , int n , vector<vector<int>>& dp){
-        
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-            
-            if (i == 0 && j == 0) {
-                dp[i][j] = 1;
-                continue; 
-            }
-
-            
-            int up = 0;
-            int left = 0;
-
-            
-            if (i > 0)
-                up = dp[i - 1][j];
-
-           
-            if (j > 0)
-                left = dp[i][j - 1];
-
-            
-            dp[i][j] = up + left;
-        }
-    }
-
-    
-    return dp[m - 1][n - 1];
-
-    }
-    
     int uniquePaths(int m, int n) {
-        vector<vector<int>> dp(m,vector<int>(n,-1));
-        return countWaysUtil(m, n,dp);
+        vector<vector<int>> dp(m, vector<int>(n));
+        return dfs(dp, 0, 0);
+    }
+    int dfs(vector<vector<int>>& dp, int i, int j) {
+        if(i >= size(dp)   || j >= size(dp[0]))   return 0;     // out of bounds - invalid
+        if(i == size(dp)-1 && j == size(dp[0])-1) return 1;     // reached end - valid path
+        if(dp[i][j]) return dp[i][j];                           // directly return if already calculated
+        return dp[i][j] = dfs(dp, i+1, j) + dfs(dp, i, j+1);    // store the result in dp[i][j] and then return
     }
 };
