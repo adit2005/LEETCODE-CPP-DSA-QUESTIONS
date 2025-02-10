@@ -1,74 +1,28 @@
 class BrowserHistory {
 public:
-    
-    // declare an array
-    
-    vector<string> arr;
-    
-    // declare a pointer
-    
-    int pointer = -1;
-    
-    BrowserHistory(string homepage) {
-        
-        // push the homepage into the array
-        
-        arr.push_back(homepage);
-        
-        // initialize the pointer
-        
-        pointer = 0;
-    }
-    
+    stack<string> h_back, h_forward;
+    string cur;
+    BrowserHistory(string homepage) { cur = homepage; }
     void visit(string url) {
-        
-        // erase all the next pages next to the current page
-        
-        arr.erase(arr.begin() + pointer + 1, arr.end());
-        
-        // push the url into array
-        
-        arr.push_back(url);
-        
-        // update pointer
-        
-        pointer = arr.size() - 1;
+        h_forward = stack<string>();
+        h_back.push(cur);
+        cur = url;
     }
-    
     string back(int steps) {
-        
-        // move back the pointer accordingly
-        
-        if(pointer - steps < 0)
-        {
-            pointer = 0;
+        while (--steps >= 0 && !h_back.empty()) {
+            h_forward.push(cur);
+            cur = h_back.top();
+            h_back.pop();
         }
-        else
-        {
-            pointer -= steps;
-        }
-        
-        // return the result
-        
-        return arr[pointer];
+        return cur;
     }
-    
     string forward(int steps) {
-        
-        // movce forward the pointer accordingly
-        
-        if(pointer + steps >= arr.size())
-        {
-            pointer = arr.size() - 1;
+        while (--steps >= 0 && !h_forward.empty()) {
+            h_back.push(cur);
+            cur = h_forward.top();
+            h_forward.pop();
         }
-        else
-        {
-            pointer += steps;
-        }
-        
-        // return the res
-        
-        return arr[pointer];
+        return cur;
     }
 };
 
