@@ -1,38 +1,35 @@
 class Solution {
 public:
     vector<vector<string>> partition(string s) {
-        vector<vector<string>> res;
-        if(s.empty()) return res;
-
-        vector<string> part;
-        dfs(0, s, part, res);
-
-        return res;
-        
+        vector<vector<string>> pars;
+        vector<string> par;
+        partition(s, 0, par, pars);
+        return pars;
     }
 
-
-    void dfs(int index, string &s, vector<string> &part, vector<vector<string>> &res){
-        if(index == s.size()){
-            res.push_back(part);
-            return;
-        }
-
-        for(int i =index; i< s.size(); i++){
-            if(isPalindrome(s, index, i)){
-                part.push_back(s.substr(index, i-index+1));
-                dfs(i+1, s, part, res);
-                part.pop_back();
+private:
+    void partition(string& s, int start, vector<string>& par,
+                   vector<vector<string>>& pars) {
+        int n = s.length();
+        if (start == n) {
+            pars.push_back(par);
+        } else {
+            for (int i = start; i < n; i++) {
+                if (isPalindrome(s, start, i)) {
+                    par.push_back(s.substr(start, i - start + 1));
+                    partition(s, i + 1, par, pars);
+                    par.pop_back();
+                }
             }
         }
     }
 
-    bool isPalindrome(const string &s, int start, int end){
-        while(start <= end){
-            if(s[start++] != s[end--])
-              return false;
+    bool isPalindrome(string& s, int l, int r) {
+        while (l < r) {
+            if (s[l++] != s[r--]) {
+                return false;
+            }
         }
-
         return true;
     }
 };
