@@ -1,73 +1,40 @@
 class Solution {
 public:
-    vector<int> constructDistancedSequence(int targetNumber) {
-        // Initialize the result sequence with size 2*n - 1 filled with 0s
-        vector<int> resultSequence(targetNumber * 2 - 1, 0);
-
-        // Keep track of which numbers are already placed in the sequence
-        vector<bool> isNumberUsed(targetNumber + 1, false);
-
-        // Start recursive backtracking to construct the sequence
-        findLexicographicallyLargestSequence(0, resultSequence, isNumberUsed,
-                                             targetNumber);
-
-        return resultSequence;
+    vector<int> constructDistancedSequence(int n) {
+        vector<int> result(2 * n - 1, 0);
+        vector<bool> used(n + 1, false);
+        backtrack(result, used, n, 0);
+        return result;
     }
 
 private:
-    // Recursive function to generate the desired sequence
-    bool findLexicographicallyLargestSequence(int currentIndex,
-                                              vector<int>& resultSequence,
-                                              vector<bool>& isNumberUsed,
-                                              int targetNumber) {
-        // If we have filled all positions, return true indicating success
-        if (currentIndex == resultSequence.size()) {
+    bool backtrack(vector<int>& result, vector<bool>& used, int n, int index) {
+        while (index < result.size() && result[index] != 0) {
+            index++;
+        }
+        if (index == result.size()) {
             return true;
         }
 
-        // If the current position is already filled, move to the next index
-        if (resultSequence[currentIndex] != 0) {
-            return findLexicographicallyLargestSequence(
-                currentIndex + 1, resultSequence, isNumberUsed, targetNumber);
-        }
+        for (int i = n; i >= 1; i--) {
+            if (used[i]) continue;
 
-        // Attempt to place numbers from targetNumber to 1 for a
-        // lexicographically largest result
-        for (int numberToPlace = targetNumber; numberToPlace >= 1;
-             numberToPlace--) {
-            if (isNumberUsed[numberToPlace]) continue;
-
-            isNumberUsed[numberToPlace] = true;
-            resultSequence[currentIndex] = numberToPlace;
-
-            // If placing number 1, move to the next index directly
-            if (numberToPlace == 1) {
-                if (findLexicographicallyLargestSequence(
-                        currentIndex + 1, resultSequence, isNumberUsed,
-                        targetNumber)) {
-                    return true;
-                }
+            if (i == 1) {
+                result[index] = 1;
+                used[1] = true;
+                if (backtrack(result, used, n, index + 1)) return true;
+                result[index] = 0;
+                used[1] = false;
+            } else if (index + i < result.size() && result[index + i] == 0) {
+                result[index] = i;
+                result[index + i] = i;
+                used[i] = true;
+                if (backtrack(result, used, n, index + 1)) return true;
+                result[index] = 0;
+                result[index + i] = 0;
+                used[i] = false;
             }
-            // Place larger numbers at two positions if valid
-            else if (currentIndex + numberToPlace < resultSequence.size() &&
-                     resultSequence[currentIndex + numberToPlace] == 0) {
-                resultSequence[currentIndex + numberToPlace] = numberToPlace;
-
-                if (findLexicographicallyLargestSequence(
-                        currentIndex + 1, resultSequence, isNumberUsed,
-                        targetNumber)) {
-                    return true;
-                }
-
-                // Undo the placement for backtracking
-                resultSequence[currentIndex + numberToPlace] = 0;
-            }
-
-            // Undo current placement and mark the number as unused
-            resultSequence[currentIndex] = 0;
-            isNumberUsed[numberToPlace] = false;
         }
-
         return false;
     }
 };
